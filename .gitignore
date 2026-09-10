@@ -1,0 +1,10 @@
+# macOS
+.DS_Store
+ 
+# R
+.Rhistory
+.RData
+ 
+# Quarto
+/.quarto/
+*_cache/
