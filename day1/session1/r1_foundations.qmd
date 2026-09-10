@@ -1,0 +1,554 @@
+---
+title: "R Foundations"
+subtitle: "Session 1 · MLDS Bootcamp · Fall 2026"
+author: "Alice Zhao"
+engine: knitr
+format:
+  revealjs:
+    theme: white
+    transition: fade
+    incremental: true
+    loop: true
+    echo: true
+---
+
+## Why R?
+
+- R is open source
+- R has extensive statistical capabilities
+- R can create custom, publication-quality visualizations
+- R has a large, active community of users
+
+## Discussion
+
+- Who has used R before?
+- What are your thoughts on R?
+
+## What is RStudio?
+
+- It's an integrated development environment (IDE) for R
+- It provides a user-friendly interface to write and run code
+- RStudio Desktop is the most common way people use R\
+  (vs RStudio Server or Posit Cloud)
+- Posit (formerly RStudio) is the company that maintains it
+
+## Demo
+
+::::::: columns
+::: {.column width="50%"}
+- R in the Terminal
+:::
+
+::::: {.column width="50%"}
+- RStudio IDE
+
+:::: {.fragment .nonincremental .small-text}
+::: {}
+> - Console
+>
+> - Editor
+>
+>   - Create a new R Script
+>   - Run vs Source
+>
+> - Environment & History
+>
+> - Files
+>
+>   - Set Working Directory
+>
+> - Plots / Packages / Help
+:::
+::::
+:::::
+:::::::
+
+## Reshuffle #2
+
+- What is your comfort level with R?
+- Find a new group of 2-3 people with a mix of R experience
+- Introduce yourselves
+
+## Agenda
+
+::: nonincremental
+- Math
+- Functions
+- Data Types
+- Logical Operators
+- Packages
+- Data Structures
+- Loading Data
+:::
+
+## Math
+
+- At its most basic, R is a calculator
+  - *Try it out*: do some math in both the Console and Editor
+  - *Shortcut*: [MacOS (Cmd Return) \| Windows (Ctrl Return)]{.smallcaps}
+
+[ ]{.tight-break}
+
+- A **variable** stores a value (use `<-` or `=`)
+  - *Try it out*: create some variables and view them in the Environment
+  - *Shortcut*: [MacOS (Alt -) \| Windows (Option -)]{.smallcaps}
+
+## Exercise: Math
+
+::: nonincremental
+- Pick a number and save it as `x`
+- Multiply `x` by 3
+- Take the log of the above
+- Subtract 4 from the above
+- Square the above
+:::
+
+## Solution: Math
+
+```{r}
+x <- 5
+x*3
+log(x*3)
+(log(x*3))-4
+((log(x*3))-4)^2
+```
+
+[\* *A quick note on using AI during this program*]{.small-text}
+
+## Functions
+
+- A **function** takes in **parameters** (**arguments**) and outputs values
+
+::: fragment
+**Exercise: Functions**
+:::
+
+:::: {.fragment .nonincremental .small-text}
+::: {}
+> Explore the `log` function
+>
+> - What happens when you type `?log` in the console?
+>
+> - Take the natural log of 10
+>
+> - Take the log of 10 with base 2
+>
+> - Store the results as a variable
+:::
+::::
+
+## Solution: Functions
+
+```{r}
+# Take the natural log of 10
+log(10)
+
+# Take the log of 10 with base-2
+log(10, base=2)
+
+# Store the result of log(10) as a variable
+y <- log(10)
+```
+
+## Data Types
+
+- numeric: double, integer
+- character: `''` or `""` both work
+- logical: `TRUE` vs `FALSE`
+
+[ ]{.tight-break}
+
+- use `class()` or `typeof()` to check on an object's data type
+
+## Data Type Examples
+
+::::: {.columns style="gap: 30px;"}
+::: column
+```{r}
+class(3.14)
+class(3)
+class(3L)
+class("hi")
+class(TRUE)
+```
+:::
+
+::: column
+```{r}
+typeof(3.14)
+typeof(3)
+typeof(3L)
+typeof("hi")
+typeof(TRUE)
+```
+:::
+:::::
+
+## Logical Operators
+
+- These are R's core logical operators
+
+::: {.fragment .nonincremental .small-text}
+- `==` for "is equal"
+- `!` for "is not"
+- `&` for "and"
+- `|` for "or"
+- `<` for "less than"
+- `>` for "greater than"
+:::
+
+- A statement with logical operators returns `TRUE` or `FALSE`
+
+## Example: Logical Operators
+
+```{r}
+5 > 4
+
+(5 > 4) & (4 < 5)
+
+(5 > 4) | (4 < 5)
+
+!(4 > 5)
+```
+
+## Exercise: Logical Operators
+
+::: nonincremental
+- Check if 1 is bigger than 2
+- Check if 1 + 1 is equal to 2
+- Check if the strings "eat" and "drink" are not equal to each other
+- Check if it's true that 1 equals 1 *AND* 1 equals 2
+- Check if it's true that 1 equals 1 *OR* 1 equals 2
+:::
+
+## Solution: Logical Operators
+
+```{r}
+1 > 2
+(1 + 1) == 2
+"eat" != 'drink'
+(1==1) & (1==2)
+(1==1) | (1==2)
+```
+
+## Packages
+
+- **Packages** are additional functions / data sets / tools built by the community, that you can use in R
+
+- Main takeaway: install once and load every time
+
+::: {.fragment .nonincremental}
+- **Demo**
+  - Install the package `ggplot2`
+  - Load the package `ggplot2`
+:::
+
+::: fragment
+```{r}
+#| eval: false
+data()
+mpg
+```
+:::
+
+## Basics Review
+
+::: {.fragment .nonincremental}
+- Math / Variables
+- Functions / Parameters / Arguments
+- Data Types
+- Logical Operators
+- Packages
+:::
+
+## BREAK! {.center}
+
+## Reshuffle #3
+
+- What is your work experience?
+- Find a new group of 2-3 people with a mix of R experience
+- Introduce yourselves
+
+## Data Structures
+
+- How data is structured or organized
+- We've been working with a single value so far, but most of the time we'll be working with many values
+
+::: {.fragment .nonincremental}
+- Vectors
+- Lists
+- Factors
+- Data Frames
+- *Others: Matrices, Arrays, Tibbles, etc.*
+:::
+
+## Vectors
+
+- Vectors store multiple values of a **single** data type
+- Create a vector with the built-in function `c()`
+  - What do I mean by built-in function?
+  - What do you think `c` stands for?
+
+::: fragment
+```{r}
+c(1,2,3,4,5)
+vec <- c(1,2,3,4,5)
+vec
+```
+:::
+
+## Vectors
+
+- Vectors can be **indexed** by:
+  - element position (`vec[1]`)
+  - slice position (`vec[1:3]`)
+  - condition (`vec[vec>2]`)
+
+:::: {columns}
+::: {.column .fragment style="font-size: 0.8em;"}
+```{r}
+vec[1]
+vec[1:3]
+vec[vec>2]
+```
+:::
+
+::: {.column .small-text .pad-left .fragment}
+> How does this compare to other coding languages?
+:::
+::::
+
+## Example: Vectors
+
+```{r style="font-size: 0.9em;"}
+vec <- c("yes", "no", "maybe")
+vec
+
+vec <- c(1, 2, 3)
+vec
+
+vec[1]
+
+vec*2
+log(vec)
+```
+
+## Exercise: Vectors
+
+::: nonincremental
+- Run the code below to generate `x1` and `x2`
+- Select the 3rd element of `x1`
+- Select the elements of `x1` less than 0
+- Create `x3` with the first five elements of `x2`
+- Select all but the fourth element of `x3`
+
+```{r}
+set.seed(1234) 
+x1 <- rnorm(5)
+x2 <- rnorm(20, mean=0.5)
+```
+:::
+
+## Solution: Vectors
+
+::: nonincremental
+```{r}
+set.seed(1234) 
+x1 <- rnorm(5)
+x2 <- rnorm(20, mean=0.5)
+x1[3]
+x1[x1 < 0]
+x3 <- x2[1:5]
+x3
+x3[-4]
+```
+:::
+
+## More on Vectors
+
+- When something is **vectorized**, it means that multiple values are processed at once instead of going through a loop
+
+- **Missing values** are stored as `NA` and different functions will handle them differently
+
+::: {.fragment style="font-size: 0.9em;"}
+```{r}
+vec <- c(1, 8, NA, 7, 3)
+mean(vec)
+mean(vec, na.rm=TRUE)
+sum(is.na(vec)) # the total number of NA values
+```
+:::
+
+## Lists
+
+- Lists are like vectors, but more flexible
+- Lists are *heterogeneous* (vs *homogeneous* vectors): they can store single elements, vectors, or even other lists
+- Lists let you keep multi-dimensional or **ragged** data in R
+- Index a list element with double brackets: `[[1]]`
+  - Single brackets return the element still wrapped in a list
+
+## Example: Lists
+
+```{r}
+my_list <- list(42, "Hello world!",  c(1, 2, 3, 4, 5))
+my_list[[2]]
+my_list[2]
+class(my_list[[2]])
+class(my_list[2])
+```
+
+## Factors
+
+::: {style="font-size: 0.9em;"}
+- Factors are a special vector type useful for categorical variables
+- Factors have a set number of *levels* (typically auto-detected)
+- For categorical variables with a natural order, use *ordered factors*
+- Create factors with `factor()`, which takes a `levels` argument
+:::
+
+::: {.fragment}
+```{r factors}
+fac <- factor(c("red", "yellow", "green", "green", "green"))
+class(fac)
+levels(fac)
+```
+:::
+
+## Data Frames
+
+- Data frames are R's core data structure: a list of named vectors of equal length
+- Data frames are *heterogeneous* — each column can be a different data type
+  - Columns are variables
+  - Rows are observations
+- Build one with `data.frame()` or `cbind()`/`rbind()`
+- Extract specific values using `df[row, col]` and specific columns using `df$var` or `df["var"]`
+
+## Example 1: Data Frames
+:::fragment
+```{r}
+df <- data.frame(
+  name = c("Ava", "Bob", "Cam"),
+  age = c(25, 30, 35),
+  active = c(TRUE, FALSE, TRUE)
+)
+df
+department <- c("Sales", "Marketing", "Engineering")
+df <- cbind(df, department)
+df
+```
+:::
+
+## Example 1: Data Frames
+
+```{r}
+df
+df[1, 2]
+df$name
+df[c("name", "department")]
+```
+
+## Example 2: Data Frames
+
+:::fragment
+Load an existing Data Frame
+```{r}
+#| eval: false
+data()
+data(chickwts)
+# click promise
+
+str(chickwts)  # view its structure
+head(chickwts) # view the top few rows
+View(chickwts) # view the data frame in the UI
+```
+:::
+
+## Exercise: Data Frames
+
+::: nonincremental
+- Load the `mtcars()` data set
+- Find the number of rows, columns and column names
+- View the data set in the UI
+- Select the variable `mpg`
+- Select the 4th row
+- Square the value of `cyl` and store it as a new variable `cylsq`
+:::
+
+## Solution: Data Frames
+
+```{r}
+data(mtcars)
+str(mtcars)
+```
+
+## Solution: Data Frames
+
+```{r style="font-size: 0.9em;"}
+mtcars$mpg
+mtcars[4,]
+mtcars$cylsq <- (mtcars$cyl)^2
+head(mtcars)
+```
+
+## Reading in Data
+
+- We've covered how to create data frames from scratch and how to load built-in data frames
+- In most cases though, we'll want to **load data files** and store them as data frames
+
+- Option 1: Use base R's `read.csv`
+
+::: fragment
+```{r style="font-size: 0.9em;"}
+df_gm <- read.csv("gapminder.csv")   # ?read.csv for more parameters
+head(df_gm)
+```
+:::
+
+## Reading in Data
+
+- Option 2: Use tidyverse's `readr` package
+- In the Files tab, click on the .csv file >> Import Dataset
+
+::: fragment
+```{r}
+library(readr)
+gapminder <- read_csv("gapminder.csv")
+head(gapminder, 3)
+```
+:::
+
+- Notice this returns a tibble, which is a more predictable data frame (more on this later!)
+
+## Discussion
+
+- Combine with another local group
+  - What did we cover this morning?
+  - Anything stick out in particular?
+
+<br>
+  
+::: {.fragment}
+**CLASS ACTIVITY #1!**
+:::
+
+```{=html}
+<style>
+.small-text {
+  font-size: 0.75em;
+}
+
+.tight-break {
+  line-height: 0.5;
+}
+
+.reveal pre {
+  margin-top: 10px;
+  margin-bottom: 10px;
+}
+
+.reveal .column.pad-left {
+  padding-left: 50px;
+  box-sizing: border-box;
+}
+</style>
+```
