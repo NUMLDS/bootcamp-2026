@@ -1,0 +1,1646 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<script src="r2_base_r_files/libs/clipboard/clipboard.min.js"></script>
+<script src="r2_base_r_files/libs/quarto-html/tabby.min.js"></script>
+<script src="r2_base_r_files/libs/quarto-html/popper.min.js"></script>
+<script src="r2_base_r_files/libs/quarto-html/tippy.umd.min.js"></script>
+<link href="r2_base_r_files/libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="r2_base_r_files/libs/quarto-html/light-border.css" rel="stylesheet">
+<link href="r2_base_r_files/libs/quarto-html/quarto-syntax-highlighting-15634bcf2e68342d4ad2dfa704d543f6.css" rel="stylesheet" id="quarto-text-highlighting-styles"><meta charset="utf-8">
+  <meta name="generator" content="quarto-1.9.38">
+
+  <meta name="author" content="Alice Zhao">
+  <title>Base R</title>
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, minimal-ui">
+  <link rel="stylesheet" href="r2_base_r_files/libs/revealjs/dist/reset.css">
+  <link rel="stylesheet" href="r2_base_r_files/libs/revealjs/dist/reveal.css">
+  <style>
+    /* Default styles provided by pandoc.
+    ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+    */
+    code{white-space: pre-wrap;}
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    ul.task-list{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+      vertical-align: middle;
+    }
+    /* CSS for syntax highlighting */
+    html { -webkit-text-size-adjust: 100%; }
+    pre > code.sourceCode { white-space: pre; position: relative; }
+    pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+    pre > code.sourceCode > span:empty { height: 1.2em; }
+    .sourceCode { overflow: visible; }
+    code.sourceCode > span { color: inherit; text-decoration: inherit; }
+    div.sourceCode { margin: 1em 0; }
+    pre.sourceCode { margin: 0; }
+    @media screen {
+    div.sourceCode { overflow: auto; }
+    }
+    @media print {
+    pre > code.sourceCode { white-space: pre-wrap; }
+    pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+    }
+    pre.numberSource code
+      { counter-reset: source-line 0; }
+    pre.numberSource code > span
+      { position: relative; left: -4em; counter-increment: source-line; }
+    pre.numberSource code > span > a:first-child::before
+      { content: counter(source-line);
+        position: relative; left: -1em; text-align: right; vertical-align: baseline;
+        border: none; display: inline-block;
+        -webkit-touch-callout: none; -webkit-user-select: none;
+        -khtml-user-select: none; -moz-user-select: none;
+        -ms-user-select: none; user-select: none;
+        padding: 0 4px; width: 4em;
+        color: #aaaaaa;
+      }
+    pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+    div.sourceCode
+      { color: #003b4f; background-color: #f1f3f5; }
+    @media screen {
+    pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+    }
+    code span { color: #003b4f; } /* Normal */
+    code span.al { color: #ad0000; } /* Alert */
+    code span.an { color: #5e5e5e; } /* Annotation */
+    code span.at { color: #657422; } /* Attribute */
+    code span.bn { color: #ad0000; } /* BaseN */
+    code span.bu { } /* BuiltIn */
+    code span.cf { color: #003b4f; font-weight: bold; } /* ControlFlow */
+    code span.ch { color: #20794d; } /* Char */
+    code span.cn { color: #8f5902; } /* Constant */
+    code span.co { color: #5e5e5e; } /* Comment */
+    code span.cv { color: #5e5e5e; font-style: italic; } /* CommentVar */
+    code span.do { color: #5e5e5e; font-style: italic; } /* Documentation */
+    code span.dt { color: #ad0000; } /* DataType */
+    code span.dv { color: #ad0000; } /* DecVal */
+    code span.er { color: #ad0000; } /* Error */
+    code span.ex { } /* Extension */
+    code span.fl { color: #ad0000; } /* Float */
+    code span.fu { color: #4758ab; } /* Function */
+    code span.im { color: #00769e; } /* Import */
+    code span.in { color: #5e5e5e; } /* Information */
+    code span.kw { color: #003b4f; font-weight: bold; } /* Keyword */
+    code span.op { color: #5e5e5e; } /* Operator */
+    code span.ot { color: #003b4f; } /* Other */
+    code span.pp { color: #ad0000; } /* Preprocessor */
+    code span.sc { color: #5e5e5e; } /* SpecialChar */
+    code span.ss { color: #20794d; } /* SpecialString */
+    code span.st { color: #20794d; } /* String */
+    code span.va { color: #111111; } /* Variable */
+    code span.vs { color: #20794d; } /* VerbatimString */
+    code span.wa { color: #5e5e5e; font-style: italic; } /* Warning */
+  </style>
+  <link rel="stylesheet" href="r2_base_r_files/libs/revealjs/dist/theme/quarto-2740581606dc327e82f18f789b69d8a0.css">
+  <link href="r2_base_r_files/libs/revealjs/plugin/quarto-line-highlight/line-highlight.css" rel="stylesheet">
+  <link href="r2_base_r_files/libs/revealjs/plugin/reveal-menu/menu.css" rel="stylesheet">
+  <link href="r2_base_r_files/libs/revealjs/plugin/reveal-menu/quarto-menu.css" rel="stylesheet">
+  <link href="r2_base_r_files/libs/revealjs/plugin/quarto-support/footer.css" rel="stylesheet">
+  <style type="text/css">
+    .reveal div.sourceCode {
+      margin: 0;
+      overflow: auto;
+    }
+    .reveal div.hanging-indent {
+      margin-left: 1em;
+      text-indent: -1em;
+    }
+    .reveal .slide:not(.center) {
+      height: 100%;
+    }
+    .reveal .slide.scrollable {
+      overflow-y: auto;
+    }
+    .reveal .footnotes {
+      height: 100%;
+      overflow-y: auto;
+    }
+    .reveal .slide .absolute {
+      position: absolute;
+      display: block;
+    }
+    .reveal .footnotes ol {
+      counter-reset: ol;
+      list-style-type: none; 
+      margin-left: 0;
+    }
+    .reveal .footnotes ol li:before {
+      counter-increment: ol;
+      content: counter(ol) ". "; 
+    }
+    .reveal .footnotes ol li > p:first-child {
+      display: inline-block;
+    }
+    .reveal .slide ul,
+    .reveal .slide ol {
+      margin-bottom: 0.5em;
+    }
+    .reveal .slide ul li,
+    .reveal .slide ol li {
+      margin-top: 0.4em;
+      margin-bottom: 0.2em;
+    }
+    .reveal .slide ul[role="tablist"] li {
+      margin-bottom: 0;
+    }
+    .reveal .slide ul li > *:first-child,
+    .reveal .slide ol li > *:first-child {
+      margin-block-start: 0;
+    }
+    .reveal .slide ul li > *:last-child,
+    .reveal .slide ol li > *:last-child {
+      margin-block-end: 0;
+    }
+    .reveal .slide .columns:nth-child(3) {
+      margin-block-start: 0.8em;
+    }
+    .reveal blockquote {
+      box-shadow: none;
+    }
+    .reveal .tippy-content>* {
+      margin-top: 0.2em;
+      margin-bottom: 0.7em;
+    }
+    .reveal .tippy-content>*:last-child {
+      margin-bottom: 0.2em;
+    }
+    .reveal .slide > img.stretch.quarto-figure-center,
+    .reveal .slide > img.r-stretch.quarto-figure-center {
+      display: block;
+      margin-left: auto;
+      margin-right: auto; 
+    }
+    .reveal .slide > img.stretch.quarto-figure-left,
+    .reveal .slide > img.r-stretch.quarto-figure-left  {
+      display: block;
+      margin-left: 0;
+      margin-right: auto; 
+    }
+    .reveal .slide > img.stretch.quarto-figure-right,
+    .reveal .slide > img.r-stretch.quarto-figure-right  {
+      display: block;
+      margin-left: auto;
+      margin-right: 0; 
+    }
+  </style>
+</head>
+<body class="quarto-light">
+  <div class="reveal">
+    <div class="slides">
+
+<section id="title-slide" class="quarto-title-block center">
+  <h1 class="title">Base R</h1>
+  <p class="subtitle">Session 2 · MLDS Bootcamp · Fall 2026</p>
+
+<div class="quarto-title-authors">
+<div class="quarto-title-author">
+<div class="quarto-title-author-name">
+Alice Zhao 
+</div>
+</div>
+</div>
+
+</section>
+<section id="reshuffle-4" class="slide level2">
+<h2>Reshuffle #4</h2>
+<ul>
+<li class="fragment">Find a new group of 2-3 people</li>
+<li class="fragment">Introduce yourselves (again!)</li>
+<li class="fragment">Quickly recap what we discussed this morning</li>
+</ul>
+</section>
+<section id="session-1-recap" class="slide level2">
+<h2>Session 1 Recap</h2>
+<ul>
+<li>Math, variables, functions</li>
+<li>Data types: numeric, character, logical</li>
+<li>Packages</li>
+<li>Data structures: vectors, lists, factors, data frames</li>
+<li>Reading in data</li>
+</ul>
+</section>
+<section id="session-2-mindset" class="slide level2">
+<h2>Session 2 Mindset</h2>
+<ul>
+<li class="fragment">We covered foundational concepts in Session 1
+<ul>
+<li class="fragment">Working with the RStudio UI</li>
+<li class="fragment">Loading data into data frames</li>
+</ul></li>
+<li class="fragment">Now we are moving to <strong>base R</strong>: R code without any additional packages</li>
+<li class="fragment">Why learn base R?
+<ul>
+<li class="fragment">This helps you understand how R works</li>
+<li class="fragment">Many packages rely on base R code</li>
+<li class="fragment">Useful for simple tasks</li>
+</ul></li>
+</ul>
+</section>
+<section id="session-2-setup" class="slide level2">
+<h2>Session 2 Setup</h2>
+<ul>
+<li class="fragment">Clean up your console and environment before we start
+<ul>
+<li class="fragment">Click the broom icons in both tabs</li>
+</ul></li>
+<li class="fragment">We’ll be switching from R scripts to R notebooks
+<ul>
+<li class="fragment"><code>R script (.R)</code>: plain code you can use as a scratch pad</li>
+<li class="fragment"><code>R markdown (.Rmd)</code>: code along with text documentation, that you “knit” together</li>
+<li class="fragment"><code>R notebook (.Rmd)</code>: same as markdown, but can run “chunks” of code as you go <em>(great for data analysis!)</em></li>
+</ul></li>
+</ul>
+</section>
+<section id="agenda" class="slide level2">
+<h2>Agenda</h2>
+<ul>
+<li>Reading in data</li>
+<li>Data wrangling</li>
+<li>Statistics</li>
+<li>Data visualization</li>
+<li>Writing files</li>
+</ul>
+</section>
+<section id="exercise-reading-in-data" class="slide level2">
+<h2>EXERCISE: Reading in Data</h2>
+<ul>
+<li class="fragment">Read in the <code>gapminder.csv</code> file from this morning using base R only</li>
+</ul>
+<div class="fragment">
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href=""></a><span class="fu">setwd</span>(<span class="st">'~/Desktop'</span>)</span>
+<span id="cb1-2"><a href=""></a>df <span class="ot">&lt;-</span> <span class="fu">read.csv</span>(<span class="st">'gapminder.csv'</span>)</span>
+<span id="cb1-3"><a href=""></a><span class="fu">head</span>(df)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>      country year      pop continent lifeExp gdpPercap
+1 Afghanistan 1952  8425333      Asia  28.801  779.4453
+2 Afghanistan 1957  9240934      Asia  30.332  820.8530
+3 Afghanistan 1962 10267083      Asia  31.997  853.1007
+4 Afghanistan 1967 11537966      Asia  34.020  836.1971
+5 Afghanistan 1972 13079460      Asia  36.088  739.9811
+6 Afghanistan 1977 14880372      Asia  38.438  786.1134</code></pre>
+</div>
+</div>
+</div>
+</section>
+<section id="exercise-get-a-feel-for-your-data" class="slide level2">
+<h2>EXERCISE: Get a Feel for Your Data</h2>
+<ul>
+<li>Before doing anything with a new data set, get a feel for it</li>
+<li>Useful functions:
+<ul>
+<li><code>str()</code> — high-level structure</li>
+<li><code>dim()</code> — number of rows and columns</li>
+<li><code>names()</code> — column names</li>
+<li><code>head()</code> / <code>tail()</code> — preview the data</li>
+<li><code>View()</code> — preview the data in the UI</li>
+</ul></li>
+</ul>
+</section>
+<section id="solution-get-a-feel-for-your-data" class="slide level2">
+<h2>SOLUTION: Get a Feel for Your Data</h2>
+<div class="cell" style="font-size: 0.9em;">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href=""></a><span class="fu">str</span>(df)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>'data.frame':   1704 obs. of  6 variables:
+ $ country  : chr  "Afghanistan" "Afghanistan" "Afghanistan" "Afghanistan" ...
+ $ year     : int  1952 1957 1962 1967 1972 1977 1982 1987 1992 1997 ...
+ $ pop      : num  8425333 9240934 10267083 11537966 13079460 ...
+ $ continent: chr  "Asia" "Asia" "Asia" "Asia" ...
+ $ lifeExp  : num  28.8 30.3 32 34 36.1 ...
+ $ gdpPercap: num  779 821 853 836 740 ...</code></pre>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb5"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href=""></a><span class="fu">dim</span>(df)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 1704    6</code></pre>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb7"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href=""></a><span class="fu">names</span>(df)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] "country"   "year"      "pop"       "continent" "lifeExp"   "gdpPercap"</code></pre>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb9"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href=""></a><span class="fu">head</span>(df, <span class="dv">1</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>      country year     pop continent lifeExp gdpPercap
+1 Afghanistan 1952 8425333      Asia  28.801  779.4453</code></pre>
+</div>
+</div>
+</section>
+<section id="exploring-data-frames" class="slide level2">
+<h2>Exploring Data Frames</h2>
+<ul>
+<li class="fragment"><code>summary()</code> gives summary statistics for every column</li>
+<li class="fragment"><code>mean()</code>, <code>median()</code>, <code>var()</code>, <code>sd()</code>, <code>quantile()</code> — useful on individual columns</li>
+<li class="fragment"><code>table()</code> builds a frequency table for categorical columns</li>
+<li class="fragment"><code>prop.table()</code> turns a frequency table into proportions</li>
+</ul>
+</section>
+<section id="exercise-exploring-data-frames" class="slide level2">
+<h2>EXERCISE: Exploring Data Frames</h2>
+<ul>
+<li>Interpret the summary statistics for all columns</li>
+<li>Find the average population</li>
+<li>Run <code>table(df$year)</code> – how would you interpret the output?</li>
+<li>Run <code>prop.table(table(df$continent))</code> – how would you interpret the output?</li>
+</ul>
+</section>
+<section id="solution-exploring-data-frames" class="slide level2">
+<h2>SOLUTION: Exploring Data Frames</h2>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb11"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href=""></a><span class="fu">summary</span>(df)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>      country          year           pop                continent   
+ Length   :1704   Min.   :1952   Min.   :6.001e+04   Length   :1704  
+ N.unique : 142   1st Qu.:1966   1st Qu.:2.794e+06   N.unique :   5  
+ N.blank  :   0   Median :1980   Median :7.024e+06   N.blank  :   0  
+ Min.nchar:   4   Mean   :1980   Mean   :2.960e+07   Min.nchar:   4  
+ Max.nchar:  24   3rd Qu.:1993   3rd Qu.:1.959e+07   Max.nchar:   8  
+                  Max.   :2007   Max.   :1.319e+09                   
+    lifeExp        gdpPercap       
+ Min.   :23.60   Min.   :   241.2  
+ 1st Qu.:48.20   1st Qu.:  1202.1  
+ Median :60.71   Median :  3531.8  
+ Mean   :59.47   Mean   :  7215.3  
+ 3rd Qu.:70.85   3rd Qu.:  9325.5  
+ Max.   :82.60   Max.   :113523.1  </code></pre>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb13"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a href=""></a><span class="fu">mean</span>(df<span class="sc">$</span>pop)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 29601212</code></pre>
+</div>
+</div>
+</section>
+<section id="solution-exploring-data-frames-1" class="slide level2">
+<h2>SOLUTION: Exploring Data Frames</h2>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb15"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb15-1"><a href=""></a><span class="fu">table</span>(df<span class="sc">$</span>year)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+1952 1957 1962 1967 1972 1977 1982 1987 1992 1997 2002 2007 
+ 142  142  142  142  142  142  142  142  142  142  142  142 </code></pre>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb17"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb17-1"><a href=""></a><span class="fu">prop.table</span>(<span class="fu">table</span>(df<span class="sc">$</span>continent))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+    Africa   Americas       Asia     Europe    Oceania 
+0.36619718 0.17605634 0.23239437 0.21126761 0.01408451 </code></pre>
+</div>
+</div>
+</section>
+<section id="subsetting" class="slide level2">
+<h2>Subsetting</h2>
+<ul>
+<li class="fragment">Subsetting means working with just part of a data frame</li>
+<li class="fragment">Two common approaches:
+<ul>
+<li class="fragment">Index it directly: <code>df[df$continent == "Asia", ]</code></li>
+<li class="fragment">Use <code>subset()</code>: <code>subset(df, subset = continent == "Asia")</code></li>
+</ul></li>
+</ul>
+</section>
+<section id="sorting" class="slide level2">
+<h2>Sorting</h2>
+<ul>
+<li class="fragment"><code>sort()</code> reorders values
+<ul>
+<li class="fragment">Ascending by default</li>
+<li class="fragment">Use <code>decreasing = TRUE</code> to flip</li>
+</ul></li>
+<li class="fragment"><code>order()</code> gives you the index positions in sorted order
+<ul>
+<li class="fragment">Useful for reordering a whole data frame</li>
+</ul></li>
+<li class="fragment"><strong>Rule of thumb</strong>
+<ul>
+<li class="fragment">Use <code>sort()</code> for vectors and <code>order()</code> for data frames</li>
+</ul></li>
+</ul>
+</section>
+<section id="exercise-subsetting-sorting" class="slide level2">
+<h2>EXERCISE: Subsetting &amp; Sorting</h2>
+<ul>
+<li>Make a new data frame called <code>df07</code> with just the 2007 rows</li>
+<li>Create a table that shows how many countries are in each continent</li>
+<li>Sort the continents by how many countries are in each</li>
+<li>Look up Mexico’s population in 2007</li>
+</ul>
+</section>
+<section id="solution-subsetting-sorting" class="slide level2">
+<h2>SOLUTION: Subsetting &amp; Sorting</h2>
+<div class="cell" style="font-size: 0.8em;">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb19"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb19-1"><a href=""></a>df07 <span class="ot">&lt;-</span> df[df<span class="sc">$</span>year <span class="sc">==</span> <span class="dv">2007</span>, ]</span>
+<span id="cb19-2"><a href=""></a><span class="fu">head</span>(df07, <span class="dv">3</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>       country year      pop continent lifeExp gdpPercap
+12 Afghanistan 2007 31889923      Asia  43.828  974.5803
+24     Albania 2007  3600523    Europe  76.423 5937.0295
+36     Algeria 2007 33333216    Africa  72.301 6223.3675</code></pre>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb21"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb21-1"><a href=""></a><span class="fu">table</span>(df07<span class="sc">$</span>continent)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+  Africa Americas     Asia   Europe  Oceania 
+      52       25       33       30        2 </code></pre>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb23"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb23-1"><a href=""></a><span class="fu">sort</span>(<span class="fu">table</span>(df07<span class="sc">$</span>continent))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+ Oceania Americas   Europe     Asia   Africa 
+       2       25       30       33       52 </code></pre>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb25"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb25-1"><a href=""></a>df07<span class="sc">$</span>pop[df07<span class="sc">$</span>country <span class="sc">==</span> <span class="st">"Mexico"</span>]</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 108700891</code></pre>
+</div>
+</div>
+</section>
+<section id="exercise-bonus" class="slide level2">
+<h2>EXERCISE: Bonus</h2>
+<ul>
+<li>Sort the 2007 data by population descending</li>
+</ul>
+</section>
+<section id="solution-bonus" class="slide level2">
+<h2>SOLUTION: Bonus</h2>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb27"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb27-1"><a href=""></a>df07<span class="sc">$</span>rownum <span class="ot">&lt;-</span> <span class="dv">1</span><span class="sc">:</span><span class="fu">nrow</span>(df07)</span>
+<span id="cb27-2"><a href=""></a><span class="fu">head</span>(df07)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>       country year      pop continent lifeExp  gdpPercap rownum
+12 Afghanistan 2007 31889923      Asia  43.828   974.5803      1
+24     Albania 2007  3600523    Europe  76.423  5937.0295      2
+36     Algeria 2007 33333216    Africa  72.301  6223.3675      3
+48      Angola 2007 12420476    Africa  42.731  4797.2313      4
+60   Argentina 2007 40301927  Americas  75.320 12779.3796      5
+72   Australia 2007 20434176   Oceania  81.235 34435.3674      6</code></pre>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb29"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb29-1"><a href=""></a><span class="fu">order</span>(df07<span class="sc">$</span>pop)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>  [1] 109  58  36  41  85   8  27 106 130 122  82  46  53  14  47 116  74  89
+ [19]  72  66  84  75  97  99  81 136   2  29  73 105 139  63  92  30  22  32
+ [37]  13 114  96  42  44 115  35  93 129  76  68 113  64 100  40  56  16  55
+ [55] 124  11   7  18  54 108 123 117  12  37  52  57 112  34  23 131  10 104
+ [73]  50  33 141  80 111 142   4  51  94  78  38  19  17  24  91  20  31  77
+ [91] 125  87 120   6 140 107  49 126  70  79 137  62 110 101  90 133   1   3
+[109]  21  86  69 127 103   5 119 121 118  26  88  71  65 134  45  28 128  61
+[127] 132  43  39  48 138 102  83  67  95   9  98  15  60 135  59  25</code></pre>
+</div>
+</div>
+</section>
+<section id="solution-bonus-1" class="slide level2">
+<h2>SOLUTION: Bonus</h2>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb31"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb31-1"><a href=""></a><span class="fu">head</span>(df07[<span class="fu">order</span>(df07<span class="sc">$</span>pop), ])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>                   country year    pop continent lifeExp gdpPercap rownum
+1308 Sao Tome and Principe 2007 199579    Africa  65.528  1598.435    109
+696                Iceland 2007 301931    Europe  81.757 36180.789     58
+432               Djibouti 2007 496374    Africa  54.791  2082.482     36
+492      Equatorial Guinea 2007 551201    Africa  51.579 12154.090     41
+1020            Montenegro 2007 684736    Europe  74.543  9253.896     85
+96                 Bahrain 2007 708573      Asia  75.635 29796.048      8</code></pre>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb33"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb33-1"><a href=""></a><span class="fu">head</span>(df07[<span class="fu">order</span>(df07<span class="sc">$</span>pop, <span class="at">decreasing =</span> <span class="cn">TRUE</span>), ])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>           country year        pop continent lifeExp gdpPercap rownum
+300          China 2007 1318683096      Asia  72.961  4959.115     25
+708          India 2007 1110396331      Asia  64.698  2452.210     59
+1620 United States 2007  301139947  Americas  78.242 42951.653    135
+720      Indonesia 2007  223547000      Asia  70.650  3540.652     60
+180         Brazil 2007  190010647  Americas  72.390  9065.801     15
+1176      Pakistan 2007  169270617      Asia  65.483  2605.948     98</code></pre>
+</div>
+</div>
+</section>
+<section id="reshuffle-5" class="slide level2">
+<h2>Reshuffle #5</h2>
+<ul>
+<li>Find a new group of 2-3 people</li>
+<li>Introduce yourselves</li>
+</ul>
+</section>
+<section id="adding-removing-columns" class="slide level2">
+<h2>Adding &amp; Removing Columns</h2>
+<ul>
+<li class="fragment">Add a new column two ways:</li>
+</ul>
+<div class="fragment">
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb35"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb35-1"><a href=""></a>df<span class="sc">$</span>newvar <span class="ot">&lt;-</span> newvar</span>
+<span id="cb35-2"><a href=""></a>df <span class="ot">&lt;-</span> <span class="fu">cbind</span>(df, newvar)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+</div>
+<ul>
+<li class="fragment">Remove a column just as easily:</li>
+</ul>
+<div class="fragment">
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb36"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb36-1"><a href=""></a>df<span class="sc">$</span>newvar <span class="ot">&lt;-</span> <span class="cn">NULL</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+</div>
+</section>
+<section id="creating-new-columns" class="slide level2">
+<h2>Creating New Columns</h2>
+<ul>
+<li class="fragment">Two common approaches:
+<ul>
+<li class="fragment">Simple case: one function does the job
+<ul>
+<li class="fragment">Just assign its result to a new column</li>
+</ul></li>
+<li class="fragment">Conditional case: no single function fits
+<ul>
+<li class="fragment">Create an empty column, and then fill it in based on a condition</li>
+</ul></li>
+</ul></li>
+</ul>
+</section>
+<section id="exercise-creating-new-columns" class="slide level2">
+<h2>EXERCISE: Creating New Columns</h2>
+<ul>
+<li>Round <code>lifeExp</code> using <code>round()</code> and store it as <code>lifeExp_round</code></li>
+<li>Create <code>lifeExp_highlow</code>
+<ul>
+<li>Start it as empty (all <code>NA</code> values)</li>
+<li>Then fill in <code>High</code> where life expectancy is above the mean and <code>Low</code> where it’s below</li>
+<li>Check your work with <code>table()</code> to see how many High and Low values there are</li>
+</ul></li>
+</ul>
+</section>
+<section id="solution-creating-new-columns" class="slide level2">
+<h2>SOLUTION: Creating New Columns</h2>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb37"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb37-1"><a href=""></a>df07<span class="sc">$</span>lifeExp_round <span class="ot">&lt;-</span> <span class="fu">round</span>(df07<span class="sc">$</span>lifeExp)</span>
+<span id="cb37-2"><a href=""></a><span class="fu">head</span>(df07)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>       country year      pop continent lifeExp  gdpPercap rownum lifeExp_round
+12 Afghanistan 2007 31889923      Asia  43.828   974.5803      1            44
+24     Albania 2007  3600523    Europe  76.423  5937.0295      2            76
+36     Algeria 2007 33333216    Africa  72.301  6223.3675      3            72
+48      Angola 2007 12420476    Africa  42.731  4797.2313      4            43
+60   Argentina 2007 40301927  Americas  75.320 12779.3796      5            75
+72   Australia 2007 20434176   Oceania  81.235 34435.3674      6            81</code></pre>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb39"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb39-1"><a href=""></a>df07<span class="sc">$</span>lifeExp_highlow <span class="ot">&lt;-</span> <span class="cn">NA</span></span>
+<span id="cb39-2"><a href=""></a>df07<span class="sc">$</span>lifeExp_highlow[df07<span class="sc">$</span>lifeExp <span class="sc">&gt;</span> <span class="fu">mean</span>(df07<span class="sc">$</span>lifeExp)] <span class="ot">&lt;-</span> <span class="st">"High"</span></span>
+<span id="cb39-3"><a href=""></a>df07<span class="sc">$</span>lifeExp_highlow[df07<span class="sc">$</span>lifeExp <span class="sc">&lt;</span> <span class="fu">mean</span>(df07<span class="sc">$</span>lifeExp)] <span class="ot">&lt;-</span> <span class="st">"Low"</span></span>
+<span id="cb39-4"><a href=""></a><span class="fu">table</span>(df07<span class="sc">$</span>lifeExp_highlow)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+High  Low 
+  85   57 </code></pre>
+</div>
+</div>
+</section>
+<section id="aggregating" class="slide level2">
+<h2>Aggregating</h2>
+<ul>
+<li class="fragment">We often want summary statistics <em>by group</em></li>
+<li class="fragment"><code>aggregate()</code> does this: <code>aggregate(y ~ x, data = df, FUN = mean)</code> gives the mean of <code>y</code> for each group in <code>x</code></li>
+</ul>
+</section>
+<section id="exercise-aggregating" class="slide level2">
+<h2>EXERCISE: Aggregating</h2>
+<ul>
+<li>Find the mean life expectancy in 2007 for each continent</li>
+</ul>
+</section>
+<section id="solution-aggregating" class="slide level2">
+<h2>SOLUTION: Aggregating</h2>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb41"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb41-1"><a href=""></a><span class="fu">aggregate</span>(lifeExp <span class="sc">~</span> continent, <span class="at">data =</span> df07, <span class="at">FUN =</span> mean)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>  continent  lifeExp
+1    Africa 54.80604
+2  Americas 73.60812
+3      Asia 70.72848
+4    Europe 77.64860
+5   Oceania 80.71950</code></pre>
+</div>
+</div>
+</section>
+<section id="exercise-more-function-practice" class="slide level2">
+<h2>EXERCISE: More Function Practice</h2>
+<ul>
+<li>Create a new column called <code>decade</code></li>
+<li>Display the unique decades in the data</li>
+<li>How many unique decades are there?</li>
+<li>Sort the unique decades</li>
+</ul>
+</section>
+<section id="solution-more-function-practice" class="slide level2">
+<h2>SOLUTION: More Function Practice</h2>
+<div class="cell" style="font-size: 0.9em;">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb43"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb43-1"><a href=""></a>df<span class="sc">$</span>decade <span class="ot">&lt;-</span> <span class="fu">round</span>(df<span class="sc">$</span>year, <span class="sc">-</span><span class="dv">1</span>)</span>
+<span id="cb43-2"><a href=""></a><span class="fu">head</span>(df)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>      country year      pop continent lifeExp gdpPercap decade
+1 Afghanistan 1952  8425333      Asia  28.801  779.4453   1950
+2 Afghanistan 1957  9240934      Asia  30.332  820.8530   1960
+3 Afghanistan 1962 10267083      Asia  31.997  853.1007   1960
+4 Afghanistan 1967 11537966      Asia  34.020  836.1971   1970
+5 Afghanistan 1972 13079460      Asia  36.088  739.9811   1970
+6 Afghanistan 1977 14880372      Asia  38.438  786.1134   1980</code></pre>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb45"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb45-1"><a href=""></a><span class="fu">unique</span>(df<span class="sc">$</span>decade)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 1950 1960 1970 1980 1990 2000 2010</code></pre>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb47"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb47-1"><a href=""></a><span class="fu">length</span>(<span class="fu">unique</span>(df<span class="sc">$</span>decade))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 7</code></pre>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb49"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb49-1"><a href=""></a><span class="fu">sort</span>(<span class="fu">unique</span>(df<span class="sc">$</span>decade))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 1950 1960 1970 1980 1990 2000 2010</code></pre>
+</div>
+</div>
+</section>
+<section id="data-wrangling-review" class="slide level2">
+<h2>Data Wrangling Review</h2>
+<div class="{columns}">
+<div class="column fragment" style="width:60%;">
+<ul>
+<li>Read in data</li>
+<li>Get a feel for your data</li>
+<li>Explore data</li>
+<li>Subset data</li>
+<li>Sort data</li>
+<li>Add, remove and create new columns</li>
+<li>Aggregate data</li>
+<li>More functions: unique, length, etc.</li>
+</ul>
+</div><div class="column small-text pad-left fragment" style="width:40%;">
+<blockquote>
+<p>Shortcuts</p>
+<ul>
+<li>cmd/ctrl + return</li>
+<li>up/down</li>
+<li>cmd/ctrl + left/right</li>
+<li>tab</li>
+</ul>
+</blockquote>
+</div></div>
+</section>
+<section id="break" class="slide level2 center">
+<h2>BREAK!</h2>
+</section>
+<section id="reshuffle-6" class="slide level2">
+<h2>Reshuffle #6</h2>
+<ul>
+<li>Find a new group of 2-3 people</li>
+<li>Introduce yourselves</li>
+</ul>
+</section>
+<section id="agenda-1" class="slide level2">
+<h2>Agenda</h2>
+<ul>
+<li>Reading in data ✅</li>
+<li>Data wrangling ✅</li>
+<li>Statistics</li>
+<li>Data visualization</li>
+<li>Writing files</li>
+</ul>
+</section>
+<section id="question" class="slide level2">
+<h2>Question</h2>
+<ul>
+<li class="fragment">What’s the relationship between a country’s average <strong>life expectancy</strong> vs their <strong>GDP</strong> and <strong>population</strong>?</li>
+</ul>
+<div class="fragment">
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb51"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb51-1"><a href=""></a>df07</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>                      country year        pop continent lifeExp  gdpPercap
+12                Afghanistan 2007   31889923      Asia  43.828   974.5803
+24                    Albania 2007    3600523    Europe  76.423  5937.0295
+36                    Algeria 2007   33333216    Africa  72.301  6223.3675
+48                     Angola 2007   12420476    Africa  42.731  4797.2313
+60                  Argentina 2007   40301927  Americas  75.320 12779.3796
+72                  Australia 2007   20434176   Oceania  81.235 34435.3674
+84                    Austria 2007    8199783    Europe  79.829 36126.4927
+96                    Bahrain 2007     708573      Asia  75.635 29796.0483
+108                Bangladesh 2007  150448339      Asia  64.062  1391.2538
+120                   Belgium 2007   10392226    Europe  79.441 33692.6051
+132                     Benin 2007    8078314    Africa  56.728  1441.2849
+144                   Bolivia 2007    9119152  Americas  65.554  3822.1371
+156    Bosnia and Herzegovina 2007    4552198    Europe  74.852  7446.2988
+168                  Botswana 2007    1639131    Africa  50.728 12569.8518
+180                    Brazil 2007  190010647  Americas  72.390  9065.8008
+192                  Bulgaria 2007    7322858    Europe  73.005 10680.7928
+204              Burkina Faso 2007   14326203    Africa  52.295  1217.0330
+216                   Burundi 2007    8390505    Africa  49.580   430.0707
+228                  Cambodia 2007   14131858      Asia  59.723  1713.7787
+240                  Cameroon 2007   17696293    Africa  50.430  2042.0952
+252                    Canada 2007   33390141  Americas  80.653 36319.2350
+264  Central African Republic 2007    4369038    Africa  44.741   706.0165
+276                      Chad 2007   10238807    Africa  50.651  1704.0637
+288                     Chile 2007   16284741  Americas  78.553 13171.6388
+300                     China 2007 1318683096      Asia  72.961  4959.1149
+312                  Colombia 2007   44227550  Americas  72.889  7006.5804
+324                   Comoros 2007     710960    Africa  65.152   986.1479
+336           Congo Dem. Rep. 2007   64606759    Africa  46.462   277.5519
+348                Congo Rep. 2007    3800610    Africa  55.322  3632.5578
+360                Costa Rica 2007    4133884  Americas  78.782  9645.0614
+372             Cote d'Ivoire 2007   18013409    Africa  48.328  1544.7501
+384                   Croatia 2007    4493312    Europe  75.748 14619.2227
+396                      Cuba 2007   11416987  Americas  78.273  8948.1029
+408            Czech Republic 2007   10228744    Europe  76.486 22833.3085
+420                   Denmark 2007    5468120    Europe  78.332 35278.4187
+432                  Djibouti 2007     496374    Africa  54.791  2082.4816
+444        Dominican Republic 2007    9319622  Americas  72.235  6025.3748
+456                   Ecuador 2007   13755680  Americas  74.994  6873.2623
+468                     Egypt 2007   80264543    Africa  71.338  5581.1810
+480               El Salvador 2007    6939688  Americas  71.878  5728.3535
+492         Equatorial Guinea 2007     551201    Africa  51.579 12154.0897
+504                   Eritrea 2007    4906585    Africa  58.040   641.3695
+516                  Ethiopia 2007   76511887    Africa  52.947   690.8056
+528                   Finland 2007    5238460    Europe  79.313 33207.0844
+540                    France 2007   61083916    Europe  80.657 30470.0167
+552                     Gabon 2007    1454867    Africa  56.735 13206.4845
+564                    Gambia 2007    1688359    Africa  59.448   752.7497
+576                   Germany 2007   82400996    Europe  79.406 32170.3744
+588                     Ghana 2007   22873338    Africa  60.022  1327.6089
+600                    Greece 2007   10706290    Europe  79.483 27538.4119
+612                 Guatemala 2007   12572928  Americas  70.259  5186.0500
+624                    Guinea 2007    9947814    Africa  56.007   942.6542
+636             Guinea-Bissau 2007    1472041    Africa  46.388   579.2317
+648                     Haiti 2007    8502814  Americas  60.916  1201.6372
+660                  Honduras 2007    7483763  Americas  70.198  3548.3308
+672           Hong Kong China 2007    6980412      Asia  82.208 39724.9787
+684                   Hungary 2007    9956108    Europe  73.338 18008.9444
+696                   Iceland 2007     301931    Europe  81.757 36180.7892
+708                     India 2007 1110396331      Asia  64.698  2452.2104
+720                 Indonesia 2007  223547000      Asia  70.650  3540.6516
+732                      Iran 2007   69453570      Asia  70.964 11605.7145
+744                      Iraq 2007   27499638      Asia  59.545  4471.0619
+756                   Ireland 2007    4109086    Europe  78.885 40675.9964
+768                    Israel 2007    6426679      Asia  80.745 25523.2771
+780                     Italy 2007   58147733    Europe  80.546 28569.7197
+792                   Jamaica 2007    2780132  Americas  72.567  7320.8803
+804                     Japan 2007  127467972      Asia  82.603 31656.0681
+816                    Jordan 2007    6053193      Asia  72.535  4519.4612
+828                     Kenya 2007   35610177    Africa  54.110  1463.2493
+840           Korea Dem. Rep. 2007   23301725      Asia  67.297  1593.0655
+852                Korea Rep. 2007   49044790      Asia  78.623 23348.1397
+864                    Kuwait 2007    2505559      Asia  77.588 47306.9898
+876                   Lebanon 2007    3921278      Asia  71.993 10461.0587
+888                   Lesotho 2007    2012649    Africa  42.592  1569.3314
+900                   Liberia 2007    3193942    Africa  45.678   414.5073
+912                     Libya 2007    6036914    Africa  73.952 12057.4993
+924                Madagascar 2007   19167654    Africa  59.443  1044.7701
+936                    Malawi 2007   13327079    Africa  48.303   759.3499
+948                  Malaysia 2007   24821286      Asia  74.241 12451.6558
+960                      Mali 2007   12031795    Africa  54.467  1042.5816
+972                Mauritania 2007    3270065    Africa  64.164  1803.1515
+984                 Mauritius 2007    1250882    Africa  72.801 10956.9911
+996                    Mexico 2007  108700891  Americas  76.195 11977.5750
+1008                 Mongolia 2007    2874127      Asia  66.803  3095.7723
+1020               Montenegro 2007     684736    Europe  74.543  9253.8961
+1032                  Morocco 2007   33757175    Africa  71.164  3820.1752
+1044               Mozambique 2007   19951656    Africa  42.082   823.6856
+1056                  Myanmar 2007   47761980      Asia  62.069   944.0000
+1068                  Namibia 2007    2055080    Africa  52.906  4811.0604
+1080                    Nepal 2007   28901790      Asia  63.785  1091.3598
+1092              Netherlands 2007   16570613    Europe  79.762 36797.9333
+1104              New Zealand 2007    4115771   Oceania  80.204 25185.0091
+1116                Nicaragua 2007    5675356  Americas  72.899  2749.3210
+1128                    Niger 2007   12894865    Africa  56.867   619.6769
+1140                  Nigeria 2007  135031164    Africa  46.859  2013.9773
+1152                   Norway 2007    4627926    Europe  80.196 49357.1902
+1164                     Oman 2007    3204897      Asia  75.640 22316.1929
+1176                 Pakistan 2007  169270617      Asia  65.483  2605.9476
+1188                   Panama 2007    3242173  Americas  75.537  9809.1856
+1200                 Paraguay 2007    6667147  Americas  71.752  4172.8385
+1212                     Peru 2007   28674757  Americas  71.421  7408.9056
+1224              Philippines 2007   91077287      Asia  71.688  3190.4810
+1236                   Poland 2007   38518241    Europe  75.563 15389.9247
+1248                 Portugal 2007   10642836    Europe  78.098 20509.6478
+1260              Puerto Rico 2007    3942491  Americas  78.746 19328.7090
+1272                  Reunion 2007     798094    Africa  76.442  7670.1226
+1284                  Romania 2007   22276056    Europe  72.476 10808.4756
+1296                   Rwanda 2007    8860588    Africa  46.242   863.0885
+1308    Sao Tome and Principe 2007     199579    Africa  65.528  1598.4351
+1320             Saudi Arabia 2007   27601038      Asia  72.777 21654.8319
+1332                  Senegal 2007   12267493    Africa  63.062  1712.4721
+1344                   Serbia 2007   10150265    Europe  74.002  9786.5347
+1356             Sierra Leone 2007    6144562    Africa  42.568   862.5408
+1368                Singapore 2007    4553009      Asia  79.972 47143.1796
+1380          Slovak Republic 2007    5447502    Europe  74.663 18678.3144
+1392                 Slovenia 2007    2009245    Europe  77.926 25768.2576
+1404                  Somalia 2007    9118773    Africa  48.159   926.1411
+1416             South Africa 2007   43997828    Africa  49.339  9269.6578
+1428                    Spain 2007   40448191    Europe  80.941 28821.0637
+1440                Sri Lanka 2007   20378239      Asia  72.396  3970.0954
+1452                    Sudan 2007   42292929    Africa  58.556  2602.3950
+1464                Swaziland 2007    1133066    Africa  39.613  4513.4806
+1476                   Sweden 2007    9031088    Europe  80.884 33859.7484
+1488              Switzerland 2007    7554661    Europe  81.701 37506.4191
+1500                    Syria 2007   19314747      Asia  74.143  4184.5481
+1512                   Taiwan 2007   23174294      Asia  78.400 28718.2768
+1524                 Tanzania 2007   38139640    Africa  52.517  1107.4822
+1536                 Thailand 2007   65068149      Asia  70.616  7458.3963
+1548                     Togo 2007    5701579    Africa  58.420   882.9699
+1560      Trinidad and Tobago 2007    1056608  Americas  69.819 18008.5092
+1572                  Tunisia 2007   10276158    Africa  73.923  7092.9230
+1584                   Turkey 2007   71158647    Europe  71.777  8458.2764
+1596                   Uganda 2007   29170398    Africa  51.542  1056.3801
+1608           United Kingdom 2007   60776238    Europe  79.425 33203.2613
+1620            United States 2007  301139947  Americas  78.242 42951.6531
+1632                  Uruguay 2007    3447496  Americas  76.384 10611.4630
+1644                Venezuela 2007   26084662  Americas  73.747 11415.8057
+1656                  Vietnam 2007   85262356      Asia  74.249  2441.5764
+1668       West Bank and Gaza 2007    4018332      Asia  73.422  3025.3498
+1680               Yemen Rep. 2007   22211743      Asia  62.698  2280.7699
+1692                   Zambia 2007   11746035    Africa  42.384  1271.2116
+1704                 Zimbabwe 2007   12311143    Africa  43.487   469.7093
+     rownum lifeExp_round lifeExp_highlow
+12        1            44             Low
+24        2            76            High
+36        3            72            High
+48        4            43             Low
+60        5            75            High
+72        6            81            High
+84        7            80            High
+96        8            76            High
+108       9            64             Low
+120      10            79            High
+132      11            57             Low
+144      12            66             Low
+156      13            75            High
+168      14            51             Low
+180      15            72            High
+192      16            73            High
+204      17            52             Low
+216      18            50             Low
+228      19            60             Low
+240      20            50             Low
+252      21            81            High
+264      22            45             Low
+276      23            51             Low
+288      24            79            High
+300      25            73            High
+312      26            73            High
+324      27            65             Low
+336      28            46             Low
+348      29            55             Low
+360      30            79            High
+372      31            48             Low
+384      32            76            High
+396      33            78            High
+408      34            76            High
+420      35            78            High
+432      36            55             Low
+444      37            72            High
+456      38            75            High
+468      39            71            High
+480      40            72            High
+492      41            52             Low
+504      42            58             Low
+516      43            53             Low
+528      44            79            High
+540      45            81            High
+552      46            57             Low
+564      47            59             Low
+576      48            79            High
+588      49            60             Low
+600      50            79            High
+612      51            70            High
+624      52            56             Low
+636      53            46             Low
+648      54            61             Low
+660      55            70            High
+672      56            82            High
+684      57            73            High
+696      58            82            High
+708      59            65             Low
+720      60            71            High
+732      61            71            High
+744      62            60             Low
+756      63            79            High
+768      64            81            High
+780      65            81            High
+792      66            73            High
+804      67            83            High
+816      68            73            High
+828      69            54             Low
+840      70            67            High
+852      71            79            High
+864      72            78            High
+876      73            72            High
+888      74            43             Low
+900      75            46             Low
+912      76            74            High
+924      77            59             Low
+936      78            48             Low
+948      79            74            High
+960      80            54             Low
+972      81            64             Low
+984      82            73            High
+996      83            76            High
+1008     84            67             Low
+1020     85            75            High
+1032     86            71            High
+1044     87            42             Low
+1056     88            62             Low
+1068     89            53             Low
+1080     90            64             Low
+1092     91            80            High
+1104     92            80            High
+1116     93            73            High
+1128     94            57             Low
+1140     95            47             Low
+1152     96            80            High
+1164     97            76            High
+1176     98            65             Low
+1188     99            76            High
+1200    100            72            High
+1212    101            71            High
+1224    102            72            High
+1236    103            76            High
+1248    104            78            High
+1260    105            79            High
+1272    106            76            High
+1284    107            72            High
+1296    108            46             Low
+1308    109            66             Low
+1320    110            73            High
+1332    111            63             Low
+1344    112            74            High
+1356    113            43             Low
+1368    114            80            High
+1380    115            75            High
+1392    116            78            High
+1404    117            48             Low
+1416    118            49             Low
+1428    119            81            High
+1440    120            72            High
+1452    121            59             Low
+1464    122            40             Low
+1476    123            81            High
+1488    124            82            High
+1500    125            74            High
+1512    126            78            High
+1524    127            53             Low
+1536    128            71            High
+1548    129            58             Low
+1560    130            70            High
+1572    131            74            High
+1584    132            72            High
+1596    133            52             Low
+1608    134            79            High
+1620    135            78            High
+1632    136            76            High
+1644    137            74            High
+1656    138            74            High
+1668    139            73            High
+1680    140            63             Low
+1692    141            42             Low
+1704    142            43             Low</code></pre>
+</div>
+</div>
+</div>
+</section>
+<section id="brainstorm" class="slide level2">
+<h2>Brainstorm</h2>
+<ul>
+<li class="fragment">How would you go about answering this question?</li>
+</ul>
+<p><br></p>
+<ul>
+<li class="fragment"><strong>Statistics!</strong>
+<ul>
+<li class="fragment">Correlations and modeling are built into base R</li>
+</ul></li>
+</ul>
+</section>
+<section id="correlation" class="slide level2">
+<h2>Correlation</h2>
+<ul>
+<li class="fragment"><code>cor()</code> measures the linear relationship between two numeric variables (between -1 and 1)</li>
+<li class="fragment"><code>plot()</code> shows you the visual representation of the data</li>
+</ul>
+<p><br></p>
+<ul>
+<li class="fragment"><strong>EXERCISE</strong>:
+<ul>
+<li class="fragment">Use <code>cor()</code> and <code>plot()</code> to compare the relationships between <code>life expectancy</code>, <code>GDP</code> and <code>population</code></li>
+<li class="fragment">What conclusions can you make?</li>
+</ul></li>
+</ul>
+</section>
+<section id="correlation-life-exp-vs-gdp" class="slide level2">
+<h2>Correlation: Life Exp vs GDP</h2>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb53"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb53-1"><a href=""></a><span class="fu">cor</span>(df07<span class="sc">$</span>lifeExp, df07<span class="sc">$</span>gdpPercap)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 0.6786624</code></pre>
+</div>
+</div>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb55"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb55-1"><a href=""></a><span class="fu">plot</span>(df07<span class="sc">$</span>lifeExp, df07<span class="sc">$</span>gdpPercap)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+
+</div>
+<img data-src="r2_base_r_files/figure-revealjs/unnamed-chunk-15-1.png" width="960" class="r-stretch"></section>
+<section id="correlation-life-exp-vs-population" class="slide level2">
+<h2>Correlation: Life Exp vs Population</h2>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb56"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb56-1"><a href=""></a><span class="fu">cor</span>(df07<span class="sc">$</span>lifeExp, df07<span class="sc">$</span>pop)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 0.04755312</code></pre>
+</div>
+</div>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb58"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb58-1"><a href=""></a><span class="fu">plot</span>(df07<span class="sc">$</span>lifeExp, df07<span class="sc">$</span>pop)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+
+</div>
+<img data-src="r2_base_r_files/figure-revealjs/unnamed-chunk-17-1.png" width="960" class="r-stretch"></section>
+<section id="correlation-life-exp-vs-population-v2" class="slide level2">
+<h2>Correlation: Life Exp vs Population v2</h2>
+<div class="cell" style="font-size: 0.8em;">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb59"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb59-1"><a href=""></a>df07[df07<span class="sc">$</span>pop <span class="sc">&gt;</span> <span class="dv">1000000000</span>, <span class="fu">c</span>(<span class="st">"country"</span>, <span class="st">"pop"</span>)]</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>    country        pop
+300   China 1318683096
+708   India 1110396331</code></pre>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb61"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb61-1"><a href=""></a><span class="fu">plot</span>(df07<span class="sc">$</span>lifeExp[df07<span class="sc">$</span>pop <span class="sc">&lt;</span> <span class="dv">1000000000</span>], df07<span class="sc">$</span>pop[df07<span class="sc">$</span>pop <span class="sc">&lt;</span> <span class="dv">1000000000</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+
+</div>
+<img data-src="r2_base_r_files/figure-revealjs/unnamed-chunk-18-1.png" width="960" class="r-stretch"></section>
+<section id="linear-regression" class="slide level2">
+<h2>Linear Regression</h2>
+<ul>
+<li class="fragment"><code>lm()</code> fits a linear regression model</li>
+<li class="fragment">Formula syntax: <code>lm(y ~ x1 + x2, data = df)</code></li>
+<li class="fragment"><code>summary()</code> gives coefficients, p-values, and model fit</li>
+</ul>
+</section>
+<section id="linear-regression-1" class="slide level2">
+<h2>Linear Regression</h2>
+<div class="fragment" style="font-size: 0.95em;">
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb62"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb62-1"><a href=""></a>reg <span class="ot">&lt;-</span> <span class="fu">lm</span>(lifeExp <span class="sc">~</span> gdpPercap <span class="sc">+</span> pop, <span class="at">data =</span> df07)</span>
+<span id="cb62-2"><a href=""></a><span class="fu">summary</span>(reg)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+Call:
+lm(formula = lifeExp ~ gdpPercap + pop, data = df07)
+
+Residuals:
+    Min      1Q  Median      3Q     Max 
+-22.496  -6.119   1.899   7.018  13.383 
+
+Coefficients:
+             Estimate Std. Error t value Pr(&gt;|t|)    
+(Intercept) 5.921e+01  1.040e+00  56.906   &lt;2e-16 ***
+gdpPercap   6.416e-04  5.818e-05  11.029   &lt;2e-16 ***
+pop         7.001e-09  5.068e-09   1.381    0.169    
+---
+Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+
+Residual standard error: 8.87 on 139 degrees of freedom
+Multiple R-squared:  0.4679,    Adjusted R-squared:  0.4602 
+F-statistic: 61.11 on 2 and 139 DF,  p-value: &lt; 2.2e-16</code></pre>
+</div>
+</div>
+</div>
+</section>
+<section id="reshuffle-7" class="slide level2">
+<h2>Reshuffle #7</h2>
+<ul>
+<li>Find a new group of 2-3 people</li>
+<li>Introduce yourselves</li>
+</ul>
+</section>
+<section id="data-visualization" class="slide level2">
+<h2>Data Visualization</h2>
+<ul>
+<li class="fragment">We’ll cover visualization briefly today using <strong>base R</strong>
+<ul>
+<li class="fragment">We’ll go deeper with <code>ggplot2</code> in a later session</li>
+</ul></li>
+<li class="fragment">Why start with base R?
+<ul>
+<li class="fragment">Great for quickly exploring data while you’re working</li>
+<li class="fragment">Its syntax shows up again in other packages</li>
+</ul></li>
+</ul>
+</section>
+<section id="exercise-data-visualization" class="slide level2">
+<h2>EXERCISE: Data Visualization</h2>
+<ul>
+<li class="fragment">One person will do the histogram exercise</li>
+<li class="fragment">One person will do the scatter plot exercise</li>
+<li class="fragment">Then teach the other person what you learned</li>
+</ul>
+</section>
+<section id="exercise-histograms" class="slide level2">
+<h2>EXERCISE: Histograms</h2>
+<ul>
+<li>Create a histogram of the variable <code>lifeExp</code> in <code>gapminder07</code></li>
+<li>What does the <code>breaks</code> parameter do? Try modifying it.</li>
+</ul>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb64"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb64-1"><a href=""></a><span class="fu">hist</span>(df07<span class="sc">$</span>lifeExp,</span>
+<span id="cb64-2"><a href=""></a>     <span class="at">main =</span> <span class="st">"Distribution of life expectancy across countries in 2007"</span>,</span>
+<span id="cb64-3"><a href=""></a>     <span class="at">xlab =</span> <span class="st">"Life expectancy"</span>, <span class="at">ylab =</span> <span class="st">"Frequency"</span>, <span class="at">breaks=</span><span class="dv">10</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+
+</div>
+<img data-src="r2_base_r_files/figure-revealjs/unnamed-chunk-20-1.png" width="960" class="r-stretch"></section>
+<section id="scatter-plots" class="slide level2">
+<h2>Scatter Plots</h2>
+<ul>
+<li>Create a scatter plot of <code>lifeExp</code> vs <code>gdpPercap</code> using the <code>gapminder07</code> data</li>
+<li>What is the <code>abline</code>? Try modifying it.</li>
+</ul>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb65"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb65-1"><a href=""></a><span class="fu">plot</span>(lifeExp <span class="sc">~</span> gdpPercap, <span class="at">data =</span> df07,</span>
+<span id="cb65-2"><a href=""></a>     <span class="at">main =</span> <span class="st">"Relationship between life expectancy and GDP per capita in 2007"</span>,</span>
+<span id="cb65-3"><a href=""></a>     <span class="at">ylab =</span> <span class="st">"Life expectancy"</span>, <span class="at">xlab =</span> <span class="st">"GDP per capita"</span>)</span>
+<span id="cb65-4"><a href=""></a><span class="fu">abline</span>(<span class="at">h =</span> <span class="fu">mean</span>(df07<span class="sc">$</span>lifeExp))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+
+</div>
+<img data-src="r2_base_r_files/figure-revealjs/unnamed-chunk-21-1.png" width="960" class="r-stretch"></section>
+<section id="writing-to-files" class="slide level2">
+<h2>Writing to Files</h2>
+<ul>
+<li class="fragment">Save a cleaned-up data frame with <code>write.csv()</code>
+<ul>
+<li class="fragment"><em>remember <code>read.csv()</code> from earlier</em></li>
+</ul></li>
+</ul>
+<div class="fragment">
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb66"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb66-1"><a href=""></a><span class="fu">write_csv</span>(df07, <span class="at">file =</span> <span class="st">".csv"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+</div>
+<p><br></p>
+<ul>
+<li class="fragment">You can <strong>save your environment objects</strong> as an <code>.RData</code> file by clicking the <code>Save</code> icon in the Environment tab</li>
+</ul>
+</section>
+<section id="discussion" class="slide level2">
+<h2>Discussion</h2>
+<ul>
+<li class="fragment">Combine with another local group
+<ul>
+<li class="fragment">What did we cover today?</li>
+<li class="fragment">Anything stick out in particular?</li>
+</ul></li>
+</ul>
+<p><br></p>
+<div class="fragment">
+<p><strong>CLASS ACTIVITY #2!</strong></p>
+</div>
+<style>
+.small-text {
+  font-size: 0.75em;
+}
+
+.tight-break {
+  line-height: 0.5;
+}
+
+.reveal pre {
+  margin-top: 10px;
+  margin-bottom: 10px;
+}
+
+.reveal .column.pad-left {
+  padding-left: 50px;
+  box-sizing: border-box;
+}
+</style>
+
+</section>
+    </div>
+  <div class="quarto-auto-generated-content" style="display: none;">
+<div class="footer footer-default">
+
+</div>
+</div></div>
+
+  <script>window.backupDefine = window.define; window.define = undefined;</script>
+  <script src="r2_base_r_files/libs/revealjs/dist/reveal.js"></script>
+  <!-- reveal.js plugins -->
+  <script src="r2_base_r_files/libs/revealjs/plugin/quarto-line-highlight/line-highlight.js"></script>
+  <script src="r2_base_r_files/libs/revealjs/plugin/pdf-export/pdfexport.js"></script>
+  <script src="r2_base_r_files/libs/revealjs/plugin/reveal-menu/menu.js"></script>
+  <script src="r2_base_r_files/libs/revealjs/plugin/reveal-menu/quarto-menu.js"></script>
+  <script src="r2_base_r_files/libs/revealjs/plugin/quarto-support/support.js"></script>
+  
+
+  <script src="r2_base_r_files/libs/revealjs/plugin/notes/notes.js"></script>
+  <script src="r2_base_r_files/libs/revealjs/plugin/search/search.js"></script>
+  <script src="r2_base_r_files/libs/revealjs/plugin/zoom/zoom.js"></script>
+  <script src="r2_base_r_files/libs/revealjs/plugin/math/math.js"></script>
+  <script>window.define = window.backupDefine; window.backupDefine = undefined;</script>
+
+  <script>
+
+      // Full list of configuration options available at:
+      // https://revealjs.com/config/
+      Reveal.initialize({
+'controlsAuto': true,
+'previewLinksAuto': false,
+'pdfSeparateFragments': false,
+'autoAnimateEasing': "ease",
+'autoAnimateDuration': 1,
+'autoAnimateUnmatched': true,
+'jumpToSlide': true,
+'menu': {"side":"left","useTextContentForMissingTitles":true,"markers":false,"loadIcons":false,"custom":[{"title":"Tools","icon":"<i class=\"fas fa-gear\"></i>","content":"<ul class=\"slide-menu-items\">\n<li class=\"slide-tool-item active\" data-item=\"0\"><a href=\"#\" onclick=\"RevealMenuToolHandlers.fullscreen(event)\"><kbd>f</kbd> Fullscreen</a></li>\n<li class=\"slide-tool-item\" data-item=\"1\"><a href=\"#\" onclick=\"RevealMenuToolHandlers.speakerMode(event)\"><kbd>s</kbd> Speaker View</a></li>\n<li class=\"slide-tool-item\" data-item=\"2\"><a href=\"#\" onclick=\"RevealMenuToolHandlers.overview(event)\"><kbd>o</kbd> Slide Overview</a></li>\n<li class=\"slide-tool-item\" data-item=\"3\"><a href=\"#\" onclick=\"RevealMenuToolHandlers.togglePdfExport(event)\"><kbd>e</kbd> PDF Export Mode</a></li>\n<li class=\"slide-tool-item\" data-item=\"4\"><a href=\"#\" onclick=\"RevealMenuToolHandlers.toggleScrollView(event)\"><kbd>r</kbd> Scroll View Mode</a></li>\n<li class=\"slide-tool-item\" data-item=\"5\"><a href=\"#\" onclick=\"RevealMenuToolHandlers.keyboardHelp(event)\"><kbd>?</kbd> Keyboard Help</a></li>\n</ul>"}],"openButton":true},
+'smaller': false,
+ 
+        // Display controls in the bottom right corner
+        controls: false,
+
+        // Help the user learn the controls by providing hints, for example by
+        // bouncing the down arrow when they first encounter a vertical slide
+        controlsTutorial: false,
+
+        // Determines where controls appear, "edges" or "bottom-right"
+        controlsLayout: 'edges',
+
+        // Visibility rule for backwards navigation arrows; "faded", "hidden"
+        // or "visible"
+        controlsBackArrows: 'faded',
+
+        // Display a presentation progress bar
+        progress: true,
+
+        // Display the page number of the current slide
+        slideNumber: false,
+
+        // 'all', 'print', or 'speaker'
+        showSlideNumber: 'all',
+
+        // Add the current slide number to the URL hash so that reloading the
+        // page/copying the URL will return you to the same slide
+        hash: true,
+
+        // Start with 1 for the hash rather than 0
+        hashOneBasedIndex: false,
+
+        // Flags if we should monitor the hash and change slides accordingly
+        respondToHashChanges: true,
+
+        // Push each slide change to the browser history
+        history: true,
+
+        // Enable keyboard shortcuts for navigation
+        keyboard: true,
+
+        // Enable the slide overview mode
+        overview: true,
+
+        // Disables the default reveal.js slide layout (scaling and centering)
+        // so that you can use custom CSS layout
+        disableLayout: false,
+
+        // Vertical centering of slides
+        center: false,
+
+        // Enables touch navigation on devices with touch input
+        touch: true,
+
+        // Loop the presentation
+        loop: true,
+
+        // Change the presentation direction to be RTL
+        rtl: false,
+
+        // see https://revealjs.com/vertical-slides/#navigation-mode
+        navigationMode: 'linear',
+
+        // Randomizes the order of slides each time the presentation loads
+        shuffle: false,
+
+        // Turns fragments on and off globally
+        fragments: true,
+
+        // Flags whether to include the current fragment in the URL,
+        // so that reloading brings you to the same fragment position
+        fragmentInURL: false,
+
+        // Flags if the presentation is running in an embedded mode,
+        // i.e. contained within a limited portion of the screen
+        embedded: false,
+
+        // Flags if we should show a help overlay when the questionmark
+        // key is pressed
+        help: true,
+
+        // Flags if it should be possible to pause the presentation (blackout)
+        pause: true,
+
+        // Flags if speaker notes should be visible to all viewers
+        showNotes: false,
+
+        // Global override for autoplaying embedded media (null/true/false)
+        autoPlayMedia: null,
+
+        // Global override for preloading lazy-loaded iframes (null/true/false)
+        preloadIframes: null,
+
+        // Number of milliseconds between automatically proceeding to the
+        // next slide, disabled when set to 0, this value can be overwritten
+        // by using a data-autoslide attribute on your slides
+        autoSlide: 0,
+
+        // Stop auto-sliding after user input
+        autoSlideStoppable: true,
+
+        // Use this method for navigation when auto-sliding
+        autoSlideMethod: null,
+
+        // Specify the average time in seconds that you think you will spend
+        // presenting each slide. This is used to show a pacing timer in the
+        // speaker view
+        defaultTiming: null,
+
+        // Enable slide navigation via mouse wheel
+        mouseWheel: false,
+
+        // The display mode that will be used to show slides
+        display: 'block',
+
+        // Hide cursor if inactive
+        hideInactiveCursor: true,
+
+        // Time before the cursor is hidden (in ms)
+        hideCursorTime: 5000,
+
+        // Opens links in an iframe preview overlay
+        previewLinks: false,
+
+        // Transition style (none/fade/slide/convex/concave/zoom)
+        transition: 'fade',
+
+        // Transition speed (default/fast/slow)
+        transitionSpeed: 'default',
+
+        // Transition style for full page slide backgrounds
+        // (none/fade/slide/convex/concave/zoom)
+        backgroundTransition: 'none',
+
+        // Number of slides away from the current that are visible
+        viewDistance: 3,
+
+        // Number of slides away from the current that are visible on mobile
+        // devices. It is advisable to set this to a lower number than
+        // viewDistance in order to save resources.
+        mobileViewDistance: 2,
+
+        // The "normal" size of the presentation, aspect ratio will be preserved
+        // when the presentation is scaled to fit different resolutions. Can be
+        // specified using percentage units.
+        width: 1050,
+
+        height: 700,
+
+        // Factor of the display size that should remain empty around the content
+        margin: 0.1,
+
+        math: {
+          mathjax: 'https://cdn.jsdelivr.net/npm/mathjax@2.7.9/MathJax.js',
+          config: 'TeX-AMS_HTML-full',
+          tex2jax: {
+            inlineMath: [['\\(','\\)']],
+            displayMath: [['\\[','\\]']],
+            balanceBraces: true,
+            processEscapes: false,
+            processRefs: true,
+            processEnvironments: true,
+            preview: 'TeX',
+            skipTags: ['script','noscript','style','textarea','pre','code'],
+            ignoreClass: 'tex2jax_ignore',
+            processClass: 'tex2jax_process'
+          },
+        },
+
+        // reveal.js plugins
+        plugins: [QuartoLineHighlight, PdfExport, RevealMenu, QuartoSupport,
+
+          RevealMath,
+          RevealNotes,
+          RevealSearch,
+          RevealZoom
+        ]
+      });
+    </script>
+    
+    <script>
+      // htmlwidgets need to know to resize themselves when slides are shown/hidden.
+      // Fire the "slideenter" event (handled by htmlwidgets.js) when the current
+      // slide changes (different for each slide format).
+      (function () {
+        // dispatch for htmlwidgets
+        function fireSlideEnter() {
+          const event = window.document.createEvent("Event");
+          event.initEvent("slideenter", true, true);
+          window.document.dispatchEvent(event);
+        }
+
+        function fireSlideChanged(previousSlide, currentSlide) {
+          fireSlideEnter();
+
+          // dispatch for shiny
+          if (window.jQuery) {
+            if (previousSlide) {
+              window.jQuery(previousSlide).trigger("hidden");
+            }
+            if (currentSlide) {
+              window.jQuery(currentSlide).trigger("shown");
+            }
+          }
+        }
+
+        // hookup for slidy
+        if (window.w3c_slidy) {
+          window.w3c_slidy.add_observer(function (slide_num) {
+            // slide_num starts at position 1
+            fireSlideChanged(null, w3c_slidy.slides[slide_num - 1]);
+          });
+        }
+
+      })();
+    </script>
+
+    <script id="quarto-html-after-body" type="application/javascript">
+      window.document.addEventListener("DOMContentLoaded", function (event) {
+        const tabsets =  window.document.querySelectorAll(".panel-tabset-tabby")
+        tabsets.forEach(function(tabset) {
+          const tabby = new Tabby('#' + tabset.id);
+        });
+        const isCodeAnnotation = (el) => {
+          for (const clz of el.classList) {
+            if (clz.startsWith('code-annotation-')) {                     
+              return true;
+            }
+          }
+          return false;
+        }
+        const onCopySuccess = function(e) {
+          // button target
+          const button = e.trigger;
+          // don't keep focus
+          button.blur();
+          // flash "checked"
+          button.classList.add('code-copy-button-checked');
+          var currentTitle = button.getAttribute("title");
+          button.setAttribute("title", "Copied!");
+          let tooltip;
+          if (window.bootstrap) {
+            button.setAttribute("data-bs-toggle", "tooltip");
+            button.setAttribute("data-bs-placement", "left");
+            button.setAttribute("data-bs-title", "Copied!");
+            tooltip = new bootstrap.Tooltip(button, 
+              { trigger: "manual", 
+                customClass: "code-copy-button-tooltip",
+                offset: [0, -8]});
+            tooltip.show();    
+          }
+          setTimeout(function() {
+            if (tooltip) {
+              tooltip.hide();
+              button.removeAttribute("data-bs-title");
+              button.removeAttribute("data-bs-toggle");
+              button.removeAttribute("data-bs-placement");
+            }
+            button.setAttribute("title", currentTitle);
+            button.classList.remove('code-copy-button-checked');
+          }, 1000);
+          // clear code selection
+          e.clearSelection();
+        }
+        const getTextToCopy = function(trigger) {
+          const outerScaffold = trigger.parentElement.cloneNode(true);
+          const codeEl = outerScaffold.querySelector('code');
+          for (const childEl of codeEl.children) {
+            if (isCodeAnnotation(childEl)) {
+              childEl.remove();
+            }
+          }
+          return codeEl.innerText;
+        }
+        const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+          text: getTextToCopy
+        });
+        clipboard.on('success', onCopySuccess);
+        if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+          const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+            text: getTextToCopy,
+            container: window.document.getElementById('quarto-embedded-source-code-modal')
+          });
+          clipboardModal.on('success', onCopySuccess);
+        }
+          var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+          var mailtoRegex = new RegExp(/^mailto:/);
+            var filterRegex = new RegExp('/' + window.location.host + '/');
+          var isInternal = (href) => {
+              return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+          }
+          // Inspect non-navigation links and adorn them if external
+         var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+          for (var i=0; i<links.length; i++) {
+            const link = links[i];
+            if (!isInternal(link.href)) {
+              // undo the damage that might have been done by quarto-nav.js in the case of
+              // links that we want to consider external
+              if (link.dataset.originalHref !== undefined) {
+                link.href = link.dataset.originalHref;
+              }
+            }
+          }
+        function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+          const config = {
+            allowHTML: true,
+            maxWidth: 500,
+            delay: 100,
+            arrow: false,
+            appendTo: function(el) {
+                return el.closest('section.slide') || el.parentElement;
+            },
+            interactive: true,
+            interactiveBorder: 10,
+            theme: 'light-border',
+            placement: 'bottom-start',
+          };
+          if (contentFn) {
+            config.content = contentFn;
+          }
+          if (onTriggerFn) {
+            config.onTrigger = onTriggerFn;
+          }
+          if (onUntriggerFn) {
+            config.onUntrigger = onUntriggerFn;
+          }
+            config['offset'] = [0,0];
+            config['maxWidth'] = 700;
+          window.tippy(el, config); 
+        }
+        const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+        for (var i=0; i<noterefs.length; i++) {
+          const ref = noterefs[i];
+          tippyHover(ref, function() {
+            // use id or data attribute instead here
+            let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+            try { href = new URL(href).hash; } catch {}
+            const id = href.replace(/^#\/?/, "");
+            const note = window.document.getElementById(id);
+            if (note) {
+              return note.innerHTML;
+            } else {
+              return "";
+            }
+          });
+        }
+        const findCites = (el) => {
+          const parentEl = el.parentElement;
+          if (parentEl) {
+            const cites = parentEl.dataset.cites;
+            if (cites) {
+              return {
+                el,
+                cites: cites.split(' ')
+              };
+            } else {
+              return findCites(el.parentElement)
+            }
+          } else {
+            return undefined;
+          }
+        };
+        var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+        for (var i=0; i<bibliorefs.length; i++) {
+          const ref = bibliorefs[i];
+          const citeInfo = findCites(ref);
+          if (citeInfo) {
+            tippyHover(citeInfo.el, function() {
+              var popup = window.document.createElement('div');
+              citeInfo.cites.forEach(function(cite) {
+                var citeDiv = window.document.createElement('div');
+                citeDiv.classList.add('hanging-indent');
+                citeDiv.classList.add('csl-entry');
+                var biblioDiv = window.document.getElementById('ref-' + cite);
+                if (biblioDiv) {
+                  citeDiv.innerHTML = biblioDiv.innerHTML;
+                }
+                popup.appendChild(citeDiv);
+              });
+              return popup.innerHTML;
+            });
+          }
+        }
+      });
+      </script>
+    
+
+</body></html>

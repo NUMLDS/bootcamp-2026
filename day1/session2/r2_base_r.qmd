@@ -1,0 +1,486 @@
+---
+title: "Base R"
+subtitle: "Session 2 · MLDS Bootcamp · Fall 2026"
+author: "Alice Zhao"
+engine: knitr
+format:
+  revealjs:
+    theme: white
+    transition: fade
+    incremental: true
+    loop: true
+    echo: true
+---
+
+## Reshuffle #4
+
+- Find a new group of 2-3 people
+- Introduce yourselves (again!)
+- Quickly recap what we discussed this morning
+
+## Session 1 Recap
+
+::: nonincremental
+- Math, variables, functions
+- Data types: numeric, character, logical
+- Packages
+- Data structures: vectors, lists, factors, data frames
+- Reading in data
+:::
+
+## Session 2 Mindset
+
+- We covered foundational concepts in Session 1
+  - Working with the RStudio UI
+  - Loading data into data frames
+- Now we are moving to **base R**: R code without any additional packages
+- Why learn base R?
+  - This helps you understand how R works
+  - Many packages rely on base R code
+  - Useful for simple tasks
+
+## Session 2 Setup
+
+- Clean up your console and environment before we start
+  - Click the broom icons in both tabs
+- We'll be switching from R scripts to R notebooks
+  - `R script (.R)`: plain code you can use as a scratch pad
+  - `R markdown (.Rmd)`: code along with text documentation, that you "knit" together
+  - `R notebook (.Rmd)`: same as markdown, but can run "chunks" of code as you go *(great for data analysis!)*
+
+## Agenda
+
+::: nonincremental
+- Reading in data
+- Data wrangling
+- Statistics
+- Data visualization
+- Writing files
+:::
+
+## EXERCISE: Reading in Data
+
+- Read in the `gapminder.csv` file from this morning using base R only
+
+::: {.fragment}
+```{r}
+setwd('~/Desktop')
+df <- read.csv('gapminder.csv')
+head(df)
+```
+:::
+
+## EXERCISE: Get a Feel for Your Data
+
+::: nonincremental
+- Before doing anything with a new data set, get a feel for it
+- Useful functions:
+  - `str()` — high-level structure
+  - `dim()` — number of rows and columns
+  - `names()` — column names
+  - `head()` / `tail()` — preview the data
+  - `View()` — preview the data in the UI
+:::
+
+## SOLUTION: Get a Feel for Your Data
+
+```{r style="font-size: 0.9em;"}
+str(df)
+dim(df)
+names(df)
+head(df, 1)
+```
+
+## Exploring Data Frames
+
+- `summary()` gives summary statistics for every column
+- `mean()`, `median()`, `var()`, `sd()`, `quantile()` — useful on individual columns
+- `table()` builds a frequency table for categorical columns
+- `prop.table()` turns a frequency table into proportions
+
+## EXERCISE: Exploring Data Frames
+
+::: nonincremental
+- Interpret the summary statistics for all columns
+- Find the average population
+- Run `table(df$year)` -- how would you interpret the output?
+- Run `prop.table(table(df$continent))` -- how would you interpret the output?
+:::
+
+## SOLUTION: Exploring Data Frames
+
+```{r}
+summary(df)
+mean(df$pop)
+```
+
+## SOLUTION: Exploring Data Frames
+
+```{r}
+table(df$year)
+prop.table(table(df$continent))
+```
+
+## Subsetting
+
+- Subsetting means working with just part of a data frame
+- Two common approaches:
+  - Index it directly: `df[df$continent == "Asia", ]`
+  - Use `subset()`: `subset(df, subset = continent == "Asia")`
+
+## Sorting
+
+- `sort()` reorders values
+  - Ascending by default
+  - Use `decreasing = TRUE` to flip
+- `order()` gives you the index positions in sorted order
+  - Useful for reordering a whole data frame
+- **Rule of thumb**
+  - Use `sort()` for vectors and `order()` for data frames
+
+## EXERCISE: Subsetting & Sorting
+
+::: nonincremental
+- Make a new data frame called `df07` with just the 2007 rows
+- Create a table that shows how many countries are in each continent
+- Sort the continents by how many countries are in each
+- Look up Mexico's population in 2007
+:::
+
+## SOLUTION: Subsetting & Sorting
+
+```{r style="font-size: 0.8em;"}
+df07 <- df[df$year == 2007, ]
+head(df07, 3)
+table(df07$continent)
+sort(table(df07$continent))
+df07$pop[df07$country == "Mexico"]
+```
+
+## EXERCISE: Bonus
+
+::: nonincremental
+- Sort the 2007 data by population descending
+:::
+
+## SOLUTION: Bonus
+
+```{r}
+df07$rownum <- 1:nrow(df07)
+head(df07)
+order(df07$pop)
+```
+
+## SOLUTION: Bonus
+
+```{r}
+head(df07[order(df07$pop), ])
+head(df07[order(df07$pop, decreasing = TRUE), ])
+```
+
+## Reshuffle #5
+
+::: nonincremental
+- Find a new group of 2-3 people
+- Introduce yourselves
+:::
+
+## Adding & Removing Columns
+
+- Add a new column two ways:
+
+::: {.fragment}
+```{r}
+#| eval: false
+df$newvar <- newvar
+df <- cbind(df, newvar)
+```
+:::
+
+- Remove a column just as easily:
+
+::: {.fragment}
+```{r}
+#| eval: false
+df$newvar <- NULL
+```
+:::
+
+## Creating New Columns
+
+- Two common approaches:
+  - Simple case: one function does the job
+     - Just assign its result to a new column
+  - Conditional case: no single function fits
+     - Create an empty column, and then fill it in based on a condition
+
+## EXERCISE: Creating New Columns
+
+::: nonincremental
+- Round `lifeExp` using `round()` and store it as `lifeExp_round`
+- Create `lifeExp_highlow`
+  - Start it as empty (all `NA` values)
+  - Then fill in `High` where life expectancy is above the mean and `Low` where it's below
+  - Check your work with `table()` to see how many High and Low values there are
+:::
+
+## SOLUTION: Creating New Columns
+
+```{r}
+df07$lifeExp_round <- round(df07$lifeExp)
+head(df07)
+df07$lifeExp_highlow <- NA
+df07$lifeExp_highlow[df07$lifeExp > mean(df07$lifeExp)] <- "High"
+df07$lifeExp_highlow[df07$lifeExp < mean(df07$lifeExp)] <- "Low"
+table(df07$lifeExp_highlow)
+```
+
+## Aggregating
+
+- We often want summary statistics *by group*
+- `aggregate()` does this: `aggregate(y ~ x, data = df, FUN = mean)` gives the mean of `y` for each group in `x`
+
+## EXERCISE: Aggregating
+
+::: nonincremental
+- Find the mean life expectancy in 2007 for each continent
+:::
+
+## SOLUTION: Aggregating
+
+```{r}
+aggregate(lifeExp ~ continent, data = df07, FUN = mean)
+```
+
+## EXERCISE: More Function Practice
+
+::: nonincremental
+- Create a new column called `decade`
+- Display the unique decades in the data
+- How many unique decades are there?
+- Sort the unique decades
+:::
+
+## SOLUTION: More Function Practice
+
+```{r style="font-size: 0.9em;"}
+df$decade <- round(df$year, -1)
+head(df)
+unique(df$decade)
+length(unique(df$decade))
+sort(unique(df$decade))
+```
+
+## Data Wrangling Review
+
+:::: {columns}
+
+::: {.column width="60%" .fragment .nonincremental}
+- Read in data
+- Get a feel for your data
+- Explore data
+- Subset data
+- Sort data
+- Add, remove and create new columns
+- Aggregate data
+- More functions: unique, length, etc.
+:::
+
+::: {.column width="40%" .small-text .pad-left .fragment .nonincremental}
+> Shortcuts
+> 
+> - cmd/ctrl + return
+> - up/down
+> - cmd/ctrl + left/right
+> - tab
+:::
+
+:::::
+
+## BREAK! {.center}
+
+## Reshuffle #6
+
+::: nonincremental
+- Find a new group of 2-3 people
+- Introduce yourselves
+:::
+
+## Agenda
+
+::: nonincremental
+- Reading in data ✅
+- Data wrangling ✅
+- Statistics
+- Data visualization
+- Writing files
+:::
+
+## Question
+
+- What's the relationship between a country's average **life expectancy** vs their **GDP** and **population**?
+
+::: {.fragment}
+```{r}
+df07
+```
+:::
+
+## Brainstorm
+
+- How would you go about answering this question?
+
+<br>
+
+- **Statistics!**
+  - Correlations and modeling are built into base R
+
+## Correlation
+
+- `cor()` measures the linear relationship between two numeric variables (between -1 and 1)
+- `plot()` shows you the visual representation of the data
+
+<br>
+
+- **EXERCISE**:
+  - Use `cor()` and `plot()` to compare the relationships between `life expectancy`, `GDP` and `population`
+  - What conclusions can you make?
+
+## Correlation: Life Exp vs GDP
+
+```{r}
+cor(df07$lifeExp, df07$gdpPercap)
+```
+
+```{r}
+plot(df07$lifeExp, df07$gdpPercap)
+```
+
+## Correlation: Life Exp vs Population
+
+```{r}
+cor(df07$lifeExp, df07$pop)
+```
+
+```{r}
+plot(df07$lifeExp, df07$pop)
+```
+
+## Correlation: Life Exp vs Population v2
+```{r style="font-size: 0.8em;"}
+df07[df07$pop > 1000000000, c("country", "pop")]
+plot(df07$lifeExp[df07$pop < 1000000000], df07$pop[df07$pop < 1000000000])
+```
+
+## Linear Regression
+
+- `lm()` fits a linear regression model
+- Formula syntax: `lm(y ~ x1 + x2, data = df)`
+- `summary()` gives coefficients, p-values, and model fit
+
+## Linear Regression
+
+::: {.fragment style="font-size: 0.95em;"}
+```{r}
+reg <- lm(lifeExp ~ gdpPercap + pop, data = df07)
+summary(reg)
+```
+:::
+
+## Reshuffle #7
+
+::: nonincremental
+- Find a new group of 2-3 people
+- Introduce yourselves
+:::
+
+## Data Visualization
+
+- We'll cover visualization briefly today using **base R**
+  - We'll go deeper with `ggplot2` in a later session
+- Why start with base R?
+  - Great for quickly exploring data while you're working
+  - Its syntax shows up again in other packages
+  
+## EXERCISE: Data Visualization
+
+- One person will do the histogram exercise
+- One person will do the scatter plot exercise
+- Then teach the other person what you learned
+
+## EXERCISE: Histograms
+
+::: nonincremental
+- Create a histogram of the variable `lifeExp` in `gapminder07`
+- What does the `breaks` parameter do? Try modifying it.
+::: 
+
+```{r}
+hist(df07$lifeExp,
+     main = "Distribution of life expectancy across countries in 2007",
+     xlab = "Life expectancy", ylab = "Frequency", breaks=10)
+```
+
+## Scatter Plots
+
+::: nonincremental
+- Create a scatter plot of `lifeExp` vs `gdpPercap` using the `gapminder07` data
+- What is the `abline`? Try modifying it.
+:::
+
+```{r}
+plot(lifeExp ~ gdpPercap, data = df07,
+     main = "Relationship between life expectancy and GDP per capita in 2007",
+     ylab = "Life expectancy", xlab = "GDP per capita")
+abline(h = mean(df07$lifeExp))
+```
+
+## Writing to Files
+
+- Save a cleaned-up data frame with `write.csv()`
+  - *remember `read.csv()` from earlier*
+
+::: {.fragment}
+```{r}
+#| eval: false
+write_csv(df07, file = ".csv")
+```
+:::
+
+<br> 
+
+- You can **save your environment objects** as an `.RData` file by clicking the `Save` icon in the Environment tab
+
+## Discussion
+
+- Combine with another local group
+  - What did we cover today?
+  - Anything stick out in particular?
+
+<br>
+  
+::: {.fragment}
+**CLASS ACTIVITY #2!**
+:::
+
+```{=html}
+<style>
+.small-text {
+  font-size: 0.75em;
+}
+
+.tight-break {
+  line-height: 0.5;
+}
+
+.reveal pre {
+  margin-top: 10px;
+  margin-bottom: 10px;
+}
+
+.reveal .column.pad-left {
+  padding-left: 50px;
+  box-sizing: border-box;
+}
+</style>
+```
