@@ -64,7 +64,7 @@ format:
 
 ::: {.fragment}
 ```{r}
-setwd('~/Desktop')
+# setwd('~/Desktop')
 df <- read.csv('gapminder.csv')
 head(df)
 ```
@@ -411,7 +411,7 @@ summary(reg)
 ## EXERCISE: Histograms
 
 ::: nonincremental
-- Create a histogram of the variable `lifeExp` in `gapminder07`
+- Create a histogram of the variable `lifeExp` in `df07`
 - What does the `breaks` parameter do? Try modifying it.
 ::: 
 
@@ -424,7 +424,7 @@ hist(df07$lifeExp,
 ## Scatter Plots
 
 ::: nonincremental
-- Create a scatter plot of `lifeExp` vs `gdpPercap` using the `gapminder07` data
+- Create a scatter plot of `lifeExp` vs `gdpPercap` using the `df07` data
 - What is the `abline`? Try modifying it.
 :::
 
@@ -443,7 +443,7 @@ abline(h = mean(df07$lifeExp))
 ::: {.fragment}
 ```{r}
 #| eval: false
-write_csv(df07, file = ".csv")
+write.csv(df07, file = ".csv")
 ```
 :::
 

@@ -275,7 +275,7 @@ Alice Zhao
 </ul>
 <div class="fragment">
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href=""></a><span class="fu">setwd</span>(<span class="st">'~/Desktop'</span>)</span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href=""></a><span class="co"># setwd('~/Desktop')</span></span>
 <span id="cb1-2"><a href=""></a>df <span class="ot">&lt;-</span> <span class="fu">read.csv</span>(<span class="st">'gapminder.csv'</span>)</span>
 <span id="cb1-3"><a href=""></a><span class="fu">head</span>(df)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
@@ -1144,7 +1144,7 @@ F-statistic: 61.11 on 2 and 139 DF,  p-value: &lt; 2.2e-16</code></pre>
 <section id="exercise-histograms" class="slide level2">
 <h2>EXERCISE: Histograms</h2>
 <ul>
-<li>Create a histogram of the variable <code>lifeExp</code> in <code>gapminder07</code></li>
+<li>Create a histogram of the variable <code>lifeExp</code> in <code>df07</code></li>
 <li>What does the <code>breaks</code> parameter do? Try modifying it.</li>
 </ul>
 <div class="cell">
@@ -1157,7 +1157,7 @@ F-statistic: 61.11 on 2 and 139 DF,  p-value: &lt; 2.2e-16</code></pre>
 <section id="scatter-plots" class="slide level2">
 <h2>Scatter Plots</h2>
 <ul>
-<li>Create a scatter plot of <code>lifeExp</code> vs <code>gdpPercap</code> using the <code>gapminder07</code> data</li>
+<li>Create a scatter plot of <code>lifeExp</code> vs <code>gdpPercap</code> using the <code>df07</code> data</li>
 <li>What is the <code>abline</code>? Try modifying it.</li>
 </ul>
 <div class="cell">
@@ -1178,7 +1178,7 @@ F-statistic: 61.11 on 2 and 139 DF,  p-value: &lt; 2.2e-16</code></pre>
 </ul>
 <div class="fragment">
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb66"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb66-1"><a href=""></a><span class="fu">write_csv</span>(df07, <span class="at">file =</span> <span class="st">".csv"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb66"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb66-1"><a href=""></a><span class="fu">write.csv</span>(df07, <span class="at">file =</span> <span class="st">".csv"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 </div>
 <p><br></p>
