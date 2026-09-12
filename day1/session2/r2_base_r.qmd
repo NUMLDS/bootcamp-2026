@@ -387,13 +387,6 @@ summary(reg)
 ```
 :::
 
-## Reshuffle #7
-
-::: nonincremental
-- Find a new group of 2-3 people
-- Introduce yourselves
-:::
-
 ## Data Visualization
 
 - We'll cover visualization briefly today using **base R**
