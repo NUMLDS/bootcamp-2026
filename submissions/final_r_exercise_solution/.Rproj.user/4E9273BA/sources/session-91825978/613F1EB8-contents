@@ -1,0 +1,132 @@
+---
+title: "Poverty and Test Performance in NYS Schools"
+subtitle: "MLDS Boot Camp — Final R Exercise (Solution Key)"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, warning = FALSE, message = FALSE)
+library(tidyverse)
+```
+
+## Background
+
+The NYC Department of Education asked: **what can data tell us about the
+relationship between poverty and test performance in New York public
+schools?** This report looks at that question using school-level test
+score data from NYSED and county-level poverty data from the ACS,
+2008-2017.
+
+```{r load-data}
+merged <- read_csv("data/processed/merged.csv")
+county_summary <- read_csv("data/processed/county_summary.csv")
+top_bottom_scores <- read_csv("data/processed/top_bottom_poverty_scores.csv")
+score_range_by_year <- read_csv("data/processed/score_range_by_year.csv")
+
+source("scripts/4_plot.R")
+```
+
+A couple of data quality notes worth surfacing to the department before
+the results: about 6% of school-year math/ELA scores are missing
+(coded `-99` in the raw file), and roughly 40 rows had free/reduced-lunch
+percentages above 100%, which we've treated as data entry errors and
+excluded rather than tried to correct.
+
+## Table 1: County-Level Summary
+
+Total enrollment, % free/reduced lunch, and % poverty, averaged across all
+years in the data for each county. Top 10 counties by poverty rate shown
+below; the full table is in `data/processed/county_summary.csv`.
+
+```{r table-1}
+county_summary |>
+  slice_max(pct_poverty, n = 10) |>
+  mutate(
+    pct_frl = scales::percent(pct_frl, accuracy = 0.1),
+    pct_poverty = scales::percent(pct_poverty, accuracy = 0.1)
+  ) |>
+  knitr::kable(col.names = c("County", "Total Enrollment", "% FRL", "% Poverty"))
+```
+
+## Table 2: Top 5 vs. Bottom 5 Poverty Counties
+
+```{r table-2}
+top_bottom_scores |>
+  mutate(
+    pct_frl = scales::percent(pct_frl, accuracy = 0.1),
+    pct_poverty = scales::percent(pct_poverty, accuracy = 0.1),
+    mean_math = round(mean_math, 1),
+    mean_ela = round(mean_ela, 1)
+  ) |>
+  select(poverty_rank, county_name, pct_poverty, pct_frl, mean_math, mean_ela) |>
+  arrange(poverty_rank) |>
+  knitr::kable(col.names = c("Group", "County", "% Poverty", "% FRL", "Mean Math", "Mean ELA"))
+```
+
+**Takeaway:** the bottom-5 poverty counties post noticeably higher average
+math and ELA scores than the top-5 poverty counties.
+
+## Visualization 1: FRL Access vs. Test Performance (School Level)
+
+```{r viz-1}
+p1
+```
+
+**Takeaway:** at the individual school level, higher free/reduced-lunch
+enrollment is associated with lower average math scores — a clear
+downward trend, though with a lot of school-to-school variation.
+
+## Note: Math/ELA Scores Aren't on a Consistent Scale Across Years
+
+The raw test score range shifts sharply starting in 2013 — this is a
+change in the test/scoring scheme itself, not a change in student
+performance, so raw scores from 2008-2012 and 2013-2017 aren't directly
+comparable.
+
+```{r score-range-table}
+score_range_by_year |>
+  knitr::kable(
+    col.names = c("Year", "Min Math", "Max Math", "Min ELA", "Max ELA"),
+    digits = 0
+  )
+```
+
+**Takeaway:** because of this scale break, Visualizations 1 and 2 (which
+use raw math/ELA scores) mix scores from both scoring regimes and
+shouldn't be read as tracking a single continuous scale. Visualization 3
+sidesteps this by using standardized (z-score) values computed within
+each year, which puts every year on the same scale.
+
+## Visualization 2: Test Performance by Poverty Group
+
+```{r viz-2}
+p2
+```
+
+**Takeaway:** average test scores step down consistently from low- to
+medium- to high-poverty counties, in both subjects.
+
+## Visualization 3: Has This Changed Over Time?
+
+```{r viz-3}
+p3
+```
+
+**Takeaway:** the gap between low- and high-poverty counties has held
+fairly steady across 2008-2017 — there's no strong evidence the gap is
+closing on its own.
+
+## Summary for the Department
+
+- **Difference between poverty groups:** low-poverty counties outperform
+  high-poverty counties in both math and ELA, and the gap is visible from
+  the county level all the way down to individual schools' lunch program
+  access.
+- **Change over time:** the gap has persisted rather than narrowed across
+  the ten years of data available here.
+- **Moderated by lunch access:** yes — FRL access and county poverty tell
+  a consistent story, which strengthens the case that this is a real
+  relationship rather than a quirk of one measure.
+- **Caveat:** this is a correlational, exploratory analysis done in a
+  short exercise. It doesn't control for other likely factors (school
+  size, urbanicity, funding levels) and shouldn't be read as causal.

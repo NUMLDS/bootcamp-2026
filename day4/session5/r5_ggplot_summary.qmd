@@ -1,0 +1,614 @@
+---
+title: "Data Visualization <br> & R Summary"
+subtitle: "Session 5 · MLDS Bootcamp · Fall 2026"
+author: "Alice Zhao"
+engine: knitr
+format:
+  revealjs:
+    theme: white
+    transition: fade
+    incremental: true
+    loop: true
+    echo: true
+---
+
+## Discussion
+
+- What have we covered so far during bootcamp?
+
+## Data Visualization Mindset
+
+- Data visualization used to be about syntax
+- Now it's about knowing at a high-level:
+  1. The core `ggplot` structure
+  2. The data visualization workflow
+  3. The possibilities
+  4. Letting AI fill in the rest
+
+## Agenda
+
+::: nonincremental
+- **High-level concepts**
+  - Grammar of graphics basics
+  - Getting your data ready
+  - Categorical data & factors
+- **Examples**
+  - Basic plot --> AI-assisted tweaks
+  - Grouped plot --> AI-assisted tweaks
+  - Small multiples
+  - Grouped bar chart
+:::
+
+## The Grammar of Graphics
+
+- From Leland Wilkinson to Hadley Wickham
+
+::: {.fragment}
+```{r}
+#| eval: false
+ggplot(data = <DATA>) +
+  <GEOM_FUNCTION>(mapping = aes(<VARIABLES>))
+```
+:::
+
+- **data**: a data frame, supplied to `ggplot()`
+- **geom**: the shape you want to plot — `geom_point()`, `geom_col()`, `geom_line()`, etc.
+- **aes**: the mapping from data to that shape, inside `aes()`
+- Layers connect with `+`
+
+## DEMO: A Minimal Plot
+
+```{r}
+library(tidyverse)
+gapminder <- read_csv("gapminder.csv")
+gapminder07 <- gapminder |> filter(year == 2007)
+```
+
+::: {.column-body-outset}
+```{r}
+#| fig-width: 6
+#| fig-height: 4
+ggplot(gapminder07) +
+  geom_point(aes(x = gdpPercap, y = lifeExp))
+```
+:::
+
+## Getting Your Data Ready
+
+- It's important to mentally lock in what you want your rows and columns to look like **before** plotting
+- `ggplot` expects **long data**: one row per observation, one column per variable
+  - Remember from `tidyr`: `pivot_longer()` reshapes wide data into long data
+  
+## EXAMPLE: Getting Your Data Ready
+
+::: {style="font-size: 0.9em"}
+```{r}
+#| eval: false
+# is this data wide or long?
+# country      | 1997 | 2002 | 2007
+# Afghanistan  | 41.8 | 42.1 | 43.8
+
+# is this data wide or long?
+# country      | year | lifeExp
+# Afghanistan  | 1997 | 41.8
+# Afghanistan  | 2002 | 42.1
+```
+:::
+
+## EXAMPLE: Getting Your Data Ready
+
+::: {style="font-size: 0.9em"}
+```{r}
+#| eval: false
+# wide -- hard to map to a single geom
+# country      | 1997 | 2002 | 2007
+# Afghanistan  | 41.8 | 42.1 | 43.8
+
+# long -- one row per country-year, ggplot-ready
+# country      | year | lifeExp
+# Afghanistan  | 1997 | 41.8
+# Afghanistan  | 2002 | 42.1
+```
+:::
+
+- Most real-world plotting "bugs" are **data-shape** bugs, not **ggplot** bugs
+- **Tip**: If your plot looks wrong, check your data's *shape* before you touch the plot code
+
+## EXAMPLE: Getting Your Data Ready
+
+```{r}
+head(gapminder, 10)
+```
+
+## EXAMPLE: Getting Your Data Ready
+
+```{r}
+gapminder |>
+  filter(country %in% c("Canada", "Mexico", "United States")) |>
+  ggplot() +
+  geom_line(aes(x = year, y = lifeExp, color = country))
+```
+
+## Categorical Data: Factors
+
+- R stores categorical variables as **factors**
+  — a vector with a fixed set of *levels*
+- `ggplot` uses factor levels to decide legend order, axis order, etc.
+- Without factors, categories are sorted alphabetically — not always what you want
+
+## EXAMPLE: Reordering with Factors
+
+```{r}
+gapminder07 |>
+  mutate(continent = factor(continent,
+    levels = c("Oceania", "Americas", "Europe", "Asia", "Africa"))) |>
+  ggplot() +
+  geom_boxplot(aes(x = continent, y = lifeExp))
+```
+
+## Data Visualization Agenda
+
+::: nonincremental
+- **High-level concepts** ✅
+  - Grammar of graphics basics ✅
+  - Getting your data ready ✅
+  - Categorical data & factors ✅
+- **Examples**
+  - Basic plot --> AI-assisted tweaks
+  - Grouped plot --> AI-assisted tweaks
+  - Small multiples plot
+  - Grouped bar chart plot
+:::
+
+## EXAMPLE 1: Create a Basic Plot
+
+- **Goal**: Visualize life expectancy vs GDP
+- Your tasks:
+  - Sketch what you want your final visual to look like
+    - What type of plot?
+    - What's on the x and y axis?
+  - Figure out what your data needs to look like
+    - What should one row represent?
+    - What columns do you need?
+  
+## EXERCISE 1a: Create a Basic Plot
+
+Figure out how to create your plot using `ggplot` syntax
+
+```{r}
+#| eval: false
+ggplot(data = <DATA>) +
+  <GEOM_FUNCTION>(mapping = aes(<VARIABLES>))
+```
+
+## SOLUTION 1a: Create a Basic Plot
+
+```{r}
+ggplot(gapminder07) +
+  geom_point(aes(x = gdpPercap, y = lifeExp))
+```
+
+- This is correct, but bare — no title, no labels, default colors
+
+## EXERCISE 1b: Ask AI to Add...
+
+::: nonincremental
+- Paste the solution code into your AI assistant of choice
+- Ask it to:
+  - Add a title and axis labels
+  - Color the points by `continent`
+  - Apply a clean theme (e.g. `theme_minimal()`)
+  - Anything else you'd like
+:::
+
+- **Your job**: read the code it gives back — do you understand every line?
+
+## AI SOLUTION: Basic Plot
+
+::: {.column-body-outset}
+```{r}
+#| fig-width: 8
+#| fig-height: 4
+ggplot(gapminder07) +
+  geom_point(aes(x = gdpPercap, y = lifeExp, col = continent)) +
+  labs(
+    title = "Life Expectancy vs. GDP per Capita (2007)",
+    x = "GDP per capita", y = "Life expectancy"
+  ) +
+  theme_minimal()
+```
+:::
+
+## AI SOLUTION: Basic Plot v2
+
+::: {.column-body-outset}
+```{r}
+#| fig-width: 8
+#| fig-height: 4
+ggplot(gapminder07) +
+  geom_point(aes(x = gdpPercap, y = lifeExp, col = continent), size = 3) +
+  labs(
+    title = "Wealthier Countries Tend to Live Longer",
+    x = "GDP per capita", y = "Life expectancy"
+  ) +
+  theme_minimal()
+```
+:::
+
+## EXAMPLE 2: Prep the Data First
+
+- **Goal**: Visualize the total population by continent
+- Your tasks:
+  - Sketch what you want your final visual to look like
+    - What type of plot?
+    - What's on the x and y axis?
+  - Figure out what your data needs to look like
+    - What should one row represent?
+    - What columns do you need?
+
+## Data Prep: First Group, Then Plot
+
+- AI can write plotting code with relatively little thought, but you still need to pay close attention to the **data prep** step
+- Before you can plot by group, your data has to already be grouped / summarized correctly
+- This is where your `dplyr` skills matter most
+
+## EXERCISE 2a: Prep the Data First
+
+::: nonincremental
+- Using `gapminder07`, calculate total population (`pop`) by `continent`
+:::
+
+## SOLUTION 2a: Prep the Data First
+
+```{r}
+pop_by_continent <- gapminder07 |>
+  group_by(continent) |>
+  summarize(pop = sum(pop))
+
+pop_by_continent
+```
+
+## EXERCISE 2b: Create a Grouped Plot
+
+Figure out how to create your plot using `ggplot` syntax
+
+```{r}
+#| eval: false
+ggplot(data = <DATA>) +
+  <GEOM_FUNCTION>(mapping = aes(<VARIABLES>))
+```
+
+## SOLUTION 2b: Create a Grouped Plot
+
+```{r}
+pop_by_continent |>
+  ggplot() +
+  geom_col(aes(x = continent, y = pop))
+```
+
+## EXERCISE 2c: Ask AI to Add...
+
+::: nonincremental
+- Paste the solution code into your AI assistant of choice
+- Ask for a bar chart of population by continent sorted highest to lowest, with a Wall Street Journal theme
+- Add anything else you'd like
+:::
+
+- **Your job**: read the code it gives back — do you understand every line?
+
+## AI SOLUTION: Grouped Plot
+
+```{r}
+# install.packages("ggthemes")  # only needed once
+library(ggthemes)
+
+pop_by_continent |>
+  ggplot() +
+  geom_col(aes(x = reorder(continent, -pop), y = pop)) +
+  labs(
+    title = "Total Population by Continent (2007)",
+    x = "Continent", y = "Population"
+  ) +
+  theme_wsj()
+```
+
+## AI SOLUTION: Grouped Plot v2
+
+```{r}
+pop_by_continent |>
+  ggplot() +
+  geom_col(aes(x = pop, y = reorder(continent, pop))) +
+  labs(
+    title = "Asia Has the Largest Population",
+    x = "Population", y = "Continent"
+  ) +
+  theme_wsj()
+```
+
+## Data Visualization Agenda
+
+::: nonincremental
+- **High-level concepts** ✅
+  - Grammar of graphics basics ✅
+  - Getting your data ready ✅
+  - Categorical data & factors ✅
+- **Examples**
+  - Basic plot --> AI-assisted tweaks ✅
+  - Grouped plot --> AI-assisted tweaks ✅
+  - Small multiples plot
+  - Grouped bar chart plot
+:::
+
+## BREAK! {.center}
+
+## EXAMPLE 3: Small Multiples
+
+With a partner, try to understand what's happening in this code
+
+```{r}
+#| eval: false
+ggplot(gapminder07) +
+  geom_point(aes(x = gdpPercap, y = lifeExp, size = pop,
+                 col = continent), alpha = 0.6) +
+  facet_wrap(~continent) +
+  labs(
+    title = "Life Expectancy vs. GDP per Capita (2007)",
+    subtitle = "Point size reflects population",
+    x = "GDP per capita", y = "Life expectancy"
+  ) +
+  theme_minimal() +
+  theme(legend.position = "bottom")
+```
+
+- Once you understand the code, look at the charts and find some insights from the visualization
+
+## EXAMPLE 3: Small Multiples
+
+```{r}
+#| echo: false
+ggplot(gapminder07) +
+  geom_point(aes(x = gdpPercap, y = lifeExp, size = pop,
+                 col = continent), alpha = 0.6) +
+  facet_wrap(~continent) +
+  labs(
+    title = "Life Expectancy vs. GDP per Capita (2007)",
+    subtitle = "Point size reflects population",
+    x = "GDP per capita", y = "Life expectancy"
+  ) +
+  theme_minimal() +
+  theme(legend.position = "bottom")
+```
+
+## What Changed Here?
+
+::: nonincremental
+- `size=`  — mapped population to point size
+- `alpha=`  — added transparency
+- `facet_wrap()` — split into one panel per continent
+- `labs()` — added a subtitle
+- `theme()` — moved the legend
+:::
+
+- None of this is new syntax — it's the same grammar, just more layers
+
+## EXAMPLE 4: Grouped Bar Chart
+
+With a partner, try to understand what's happening in this code
+
+```{r style="font-size:0.9em"}
+gapminder07_grouped <- gapminder07 |>
+  mutate(life_exp_bracket = case_when(
+    lifeExp < 50 ~ "Under 50",
+    lifeExp < 60 ~ "50–60",
+    lifeExp < 65 ~ "60–65",
+    lifeExp < 70 ~ "65–70",
+    lifeExp < 75 ~ "70–75",
+    TRUE ~ "75+"
+  )) |>
+  mutate(life_exp_bracket = factor(life_exp_bracket,
+    levels = c("Under 50", "50–60", "60–65", "65–70", "70–75", "75+"))) |>
+  group_by(continent, life_exp_bracket) |>
+  summarize(pop = sum(pop))
+head(gapminder07_grouped, 3)
+```
+
+## EXAMPLE 4: Grouped Bar Chart
+
+With a partner, try to understand what's happening in this code
+
+```{r style="font-size:0.9em"}
+#| eval: false
+gapminder07_grouped |>
+  ggplot(aes(x = reorder(continent, -pop, sum), y = pop, fill = life_exp_bracket)) +
+  geom_col(position = "dodge") +
+  scale_y_continuous(labels = scales::label_comma()) +
+  scale_fill_brewer(palette = "Blues") +
+  labs(
+    title = "Africa Trails, Europe and Oceania Lead in Life Expectancy",
+    subtitle = "Population by continent, broken out by life expectancy group (2007)",
+    x = NULL, y = "Population", fill = "Life Expectancy"
+  ) +
+  theme_minimal() +
+  theme(legend.position = "top", plot.title = element_text(face = "bold"))
+```
+
+## EXAMPLE 4: Grouped Bar Chart
+
+```{r}
+#| echo: false
+gapminder07_grouped |>
+  ggplot(aes(x = reorder(continent, -pop, sum), y = pop, fill = life_exp_bracket)) +
+  geom_col(position = "dodge") +
+  scale_y_continuous(labels = scales::label_comma()) +
+  scale_fill_brewer(palette = "Blues") +
+  labs(
+    title = "Africa Trails, Europe and Oceania Lead in Life Expectancy",
+    subtitle = "Population by continent, broken out by life expectancy group (2007)",
+    x = NULL, y = "Population", fill = "Life Expectancy"
+  ) +
+  theme_minimal() +
+  theme(legend.position = "top", plot.title = element_text(face = "bold"))
+```
+
+## What Changed Here?
+
+::: nonincremental
+- `fill =` — assigned a bar to each life expectancy group within a continent
+- `scales::label_comma()` — adds comma separators to y-axis numbers
+- `position = "dodge"` — this is what makes it a **grouped (clustered) bar chart** — bars sit side by side instead of stacking
+- `scale_fill_brewer()` — swapped in a color palette
+- `theme` — moved location of legend and bolded title
+:::
+
+## DISCUSSION
+
+- What are the main steps you need to take when creating a data visualization?
+- What are your general thoughts on data visualization?
+
+## Data Visualization Steps
+
+::: nonincremental
+
+- **Sketch the plot**
+  - What type of plot
+  - What is on the x and y axis
+- **Prep the data to create the plot**
+  - What should each row look like
+  - What should each column look like
+- **Create a basic ggplot**
+- **Use AI to add to it**
+  - Takeaways, themes, etc.
+:::
+
+## R Summary {.center}
+
+## R vs RStudio
+
+::: {.fragment .nonincremental}
+- **Console, Terminal** — run code
+- **Editor** — write scripts and notebooks
+- **Environment, History** — current objects, past commands
+- **Files, Plots, Packages, Help** — everything else
+:::
+
+## R File Types
+
+::: nonincremental
+- `.R` — a plain script
+- `.Rmd` — code + text *(we've been using a `.qmd` file all along!)*
+- `.Rproj` — the project file
+- `.csv` — raw / processed data
+- `.html` / `.pdf` — rendered output
+- `.RDS` — a single saved R object *(vs. `.RData`, which saves your whole environment)*
+
+:::
+
+## R Project Structure
+
+```{.no-scroll}
+my-project/
+├── my-project.Rproj
+├── data/
+│   ├── raw/
+│   └── processed/
+├── R/
+│   └── functions.R
+├── scripts/
+│   ├── 1_clean.R
+│   ├── 2_transform.R
+│   └── 3_plot.R
+├── report.qmd
+└── run_all.R
+```
+
+## Best Practices
+
+- **Naming:**
+  - `snake_case` is the R convention — not camelCase
+- **Code Hygiene**:
+  - Comment the *why*, not just the *what*
+  - Consistent spacing (`x <- 5`, not `x<-5`)
+- **Reproducibility:**
+  - Restart R often and re-run top to bottom
+  - If it doesn't run in a fresh session, it's not done
+
+## And that is your introduction to R! {.center}
+
+## GitHub Follow Ups {.center}
+
+## Last Week
+
+::: nonincremental
+- In the GitHub crash course, we covered four workflows:
+  - git (**status, add, commit, log**)
+  - GitHub: create your own repo (**pull, push**)
+  - GitHub: copy an existing repo (**clone, fork**)
+  - GitHub: request your changes to get incorporated (**pull request**)
+:::
+
+## Q1: Why do we use GitHub?
+
+- **Version control** — a safety net — nothing is ever truly lost
+- **Collaboration** — multiple people can edit without overwriting each other
+- **Portfolio** — your GitHub is often the first thing an employer looks at
+
+## Q2: What is branching?
+
+- A **fork** is when you copy an existing repo under your own account
+  - This is used when you don't have permissions to interact with the original repo
+- A **branch** is when you create your own side task *within* a repo
+  - You're not editing the main branch directly and can incorporate back in when needed
+  - This is used if everyone is closely working on a project
+- A **pull request** asks someone to merge your fork or branch back in
+
+## Q3: What happens after I submit a pull request?
+
+- The owner of the original repo can accept or reject your changes
+- DEMO: bootcamp-2026 repo
+
+## Q4: What are repo best practices?
+
+- **README** — the front door of a repo, written in *Markdown*
+- **Sensible folder structure** — README at the root, data separate from code
+- `.gitignore` — set up *before* your first commit to avoid hidden files
+- **License** — add a license like MIT for people to use your code
+- **Avoid uploading data** — especially large data sets, add links to data or just show results instead of saving in repo
+
+## Q5: What should my repo look like for job applications?
+
+- README does 90% of the work — what, why, key findings, how to reproduce
+- Include easily viewable, rendered outputs and graphics, not just source code
+- Content ideas:
+  - A real question vs a built-in / Kaggle data set
+  - A topic you're excited to talk about and break down in interviews
+
+## What's Next
+
+- This afternoon we are going to tie it all together with a bootcamp capstone project
+  - R coding: base R and tidyverse
+  - R project structure: cleaning, transforming and plotting
+  - GitHub pull request
+
+## CLASS ACTIVITY! {.center}
+
+```{=html}
+<style>
+.small-text {
+  font-size: 0.75em;
+}
+
+.tight-break {
+  line-height: 0.5;
+}
+
+.reveal pre {
+  margin-top: 10px;
+  margin-bottom: 10px;
+}
+
+.reveal .column.pad-left {
+  padding-left: 50px;
+  box-sizing: border-box;
+}
+</style>
+```
