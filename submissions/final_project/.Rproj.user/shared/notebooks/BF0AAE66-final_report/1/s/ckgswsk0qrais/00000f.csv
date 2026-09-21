@@ -1,0 +1,4 @@
+"0","summary_1 <- data |>"
+"0","  group_by(county_name)|>"
+"0","  summarize(total_enrollment = sum(total_enroll),"
+"0","            mean_poverty = mean(county_per_poverty))"
