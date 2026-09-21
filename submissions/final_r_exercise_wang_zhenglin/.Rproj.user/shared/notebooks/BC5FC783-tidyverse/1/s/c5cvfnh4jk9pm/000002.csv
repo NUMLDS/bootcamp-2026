@@ -1,0 +1,26 @@
+"1","
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuZGYgfD5cbiAgZmlsdGVyKHllYXIgPT0gMjAwNykgfD4gICAgICAgICAgICAgICMgMS4gcmVkdWNlIHJvd3MgZmlyc3RcbiAgc2VsZWN0KC1nZHBQZXJjYXApIHw+ICAgICAgICAgICAgICAgICMgMi4gZHJvcCB1bm5lZWRlZCBjb2x1bW5zXG4gIG11dGF0ZShsaWZlRXhwID0gcm91bmQobGlmZUV4cCkpIHw+ICAjIDMuIHRyYW5zZm9ybSBiZWZvcmUgZ3JvdXBpbmdcbiAgZ3JvdXBfYnkoY29udGluZW50KSB8PiAgICAgICAgICAgICAgICMgNC4gZ3JvdXAsIGlmIG5lZWRlZFxuICBzdW1tYXJpemUoYXZnX2xlID0gbWVhbihsaWZlRXhwKSkgfD4gIyA1LiBjb2xsYXBzZSB0byBvbmUgcm93IHBlciBncm91cFxuICBhcnJhbmdlKGRlc2MoYWJnX2xlKSkgfD4gICAgICAgICAgICAgIyA2LiBzb3J0IG9uY2UgZGF0YSBpcyByZWFkeVxuICBoZWFkKCkgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIyA3LiB0cmltIHRvIGZpbmFsIHJvd3MgbGFzdFxuYGBgIn0= -->
+
+```r
+df |>
+  filter(year == 2007) |>              # 1. reduce rows first
+  select(-gdpPercap) |>                # 2. drop unneeded columns
+  mutate(lifeExp = round(lifeExp)) |>  # 3. transform before grouping
+  group_by(continent) |>               # 4. group, if needed
+  summarize(avg_le = mean(lifeExp)) |> # 5. collapse to one row per group
+  arrange(desc(abg_le)) |>             # 6. sort once data is ready
+  head()                               # 7. trim to final rows last
+```
+
+<!-- rnb-source-end -->
+"
+"0","```r
+df |>
+  filter(year == 2007) |>              # 1. reduce rows first
+  select(-gdpPercap) |>                # 2. drop unneeded columns
+  mutate(lifeExp = round(lifeExp)) |>  # 3. transform before grouping
+  group_by(continent) |>               # 4. group, if needed
+  summarize(avg_le = mean(lifeExp)) |> # 5. collapse to one row per group
+  arrange(desc(abg_le)) |>             # 6. sort once data is ready
+  head()                               # 7. trim to final rows last
+```"
