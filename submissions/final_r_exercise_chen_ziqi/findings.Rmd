@@ -1,0 +1,102 @@
+---
+title: "Capstone Practice"
+output:
+  html_document:
+    df_print: paged
+---
+
+```{r}
+library(tidyverse)
+library(dplyr)
+
+nys_acs <- read_csv("Data/Raw/nys_acs.csv")
+nys_schools <- read_csv("Data/Raw/nys_schools.csv")
+```
+
+Deal with missing values 
+```{r}
+schools_clean <- nys_schools |>
+  distinct() |> 
+  mutate(
+    county_name = na_if(county_name, "-99"), 
+    across(where(is.numeric), ~na_if(.x, -99)), 
+    per_free_lunch = if_else(per_free_lunch >1, NA_real_, per_free_lunch), 
+    per_reduced_lunch = if_else(per_reduced_lunch>1, NA_real_, per_reduced_lunch)
+  )
+```
+
+```{r}
+acs_clean <- nys_acs |> 
+  distinct() |>
+  mutate(across(where(is.numeric), ~ na_if(.x, -99)))
+```
+
+```{r}
+write_csv(schools_clean, "Data/Processed/schools_clean.csv")
+write_csv(acs_clean, "Data/Processed/acs_clean.csv")
+```
+
+create categorical variable that groups counties into poverty groups 
+```{r}
+acs_clean <- acs_clean |>
+  mutate(
+    poverty_group = case_when(
+      ntile(county_per_poverty, 3) == 1 ~ "low",
+      ntile(county_per_poverty, 3) == 2 ~ "medium",
+      ntile(county_per_poverty, 3) == 3 ~ "high"
+    )
+  )
+
+```
+
+Scaling scores 
+```{r}
+schools_clean <- schools_clean |>
+  group_by(year) |>
+  mutate(
+    math_z = as.numeric(scale(mean_math_score)),
+    ela_z = as.numeric(scale(mean_ela_score))
+  ) |>
+  ungroup()
+```
+
+```{r}
+schools_acs <- schools_clean |>
+  left_join(
+    acs_clean,
+    by = c("county_name", "year")
+  )
+```
+
+```{r}
+write_csv(
+  schools_acs,
+  "Data/Processed/schools_acs.csv"
+)
+```
+
+```{r}
+schools_acs <- schools_acs |>
+  mutate(
+    poverty_group = if_else(
+      is.na(poverty_group), 
+      "NA", 
+      as.character(poverty_group)
+    ),
+    poverty_group = factor(
+      poverty_group,
+      levels = c("low", "medium", "high", "NA")
+    )
+  )
+
+ggplot(schools_acs, 
+       aes(x = poverty_group, y = math_z)) +
+  geom_boxplot() +
+  labs(
+    title = "More Proverty Leads to Worse Math Performance",
+    x = "Poverty Level",
+    y = "Math Z-Score"
+  )
+```
+
+
