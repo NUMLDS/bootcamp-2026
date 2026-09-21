@@ -1,0 +1,8 @@
+"0","county_avg <- merged_data |>"
+"0","  group_by(county_name, income_group) |>"
+"0","  summarise("
+"0","    avg_math = mean(math_z, na.rm = TRUE),"
+"0","    avg_ela  = mean(ela_z, na.rm = TRUE),"
+"0","    .groups = ""drop"""
+"0","  )"
+"0","county_avg"
