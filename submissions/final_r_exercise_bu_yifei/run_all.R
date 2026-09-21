@@ -1,0 +1,7 @@
+# Run the complete analysis workflow
+
+source("scripts/1_clean.R")
+source("scripts/2_transform.R")
+source("scripts/3_analyze.R")
+source("scripts/4_plot.R")
+
