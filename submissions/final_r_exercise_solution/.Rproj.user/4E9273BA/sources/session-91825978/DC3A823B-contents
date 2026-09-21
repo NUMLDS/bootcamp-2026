@@ -1,0 +1,15 @@
+library(tidyverse)
+
+merged <- read_csv("data/processed/merged.csv")
+
+hist(merged$county_per_poverty, breaks=30)
+
+merged |>
+  filter(!is.na(per_free_lunch), !is.na(mean_math_score)) |>
+  ggplot(aes(x = per_free_lunch, y = mean_math_score)) +
+  geom_point(alpha = 0.15) +
+  labs(
+    title = "Schools with More Free-Lunch Students Score Lower in Math",
+    x = "% Students on Free Lunch", y = "Mean Math Score"
+  ) +
+  theme_minimal()
