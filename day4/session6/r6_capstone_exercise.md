@@ -53,6 +53,8 @@ Your code should be **broken down into separate scripts by job** — one script 
 
 Place the data files `nys_schools.csv` and `nys_acs.csv` in your `data/raw/` folder, then read them into R using `read_csv()`. These data come from two different sources: one is data on *schools* in New York state from the [New York State Department of Education](http://data.nysed.gov/downloads.php), and the other is data on *counties* from the American Communities Survey from the US Census Bureau. Review the codebook file so that you know what each variable name means in each dataset.
 
+Link to data: https://drive.google.com/drive/folders/1DcWIvLj2motQ5Nkfvjo6GFLcetfvssVq?usp=share_link
+
 #### Task 2: Explore your data
 
 Getting to know your data is a critical part of data analysis. Take the time to explore the structure of the two dataframes you have imported — `glimpse()` is a good place to start. What types of variables are there? Is there any missing data? How can you tell? What else do you notice about the data?
@@ -99,15 +101,27 @@ For example:
 
 In your `.Rmd` notebook, walk through your process and present your key tables and plots, along with a short written takeaway for each of the department's original questions.
 
+Be sure to knit or render your `.Rmd` notebook into an `.html` file that others can easily view.
+
+Add a `README.md` file to your R project that explains the contents of your folder.
+
 ---
 
 ### Step 3: Github Submission
 
-#### 1. Save your project within your forked repo
+#### 1. Make sure your forked repo is up to date with the class repo
 
-When you have completed the exercise, save your entire project folder (`.Rproj`, `data/`, `R/`, `scripts/`, `.Rmd`, `run_all.R`) in the `submissions` folder of your forked repo, inside a folder named using this convention (`snake_case`, matching R naming best practices): `final_r_exercise_lastname_firstname/`.
+`git pull upstream main`
 
-#### 2. Create a pull request
+#### 2. Save your project within your forked repo
+
+When you have completed the exercise, save your entire project folder (`.Rproj`, `data/`, `scripts/`, `.Rmd`, `.html`, `run_all.R`, `README.md`) in the `submissions` folder of your forked repo, inside a folder named using this convention (`snake_case`, matching R naming best practices): `final_r_exercise_lastname_firstname/`.
+
+#### 3. Push your changes up to your forked repo
+
+`git push origin main`
+
+#### 4. Create a pull request
 
 Create a pull request to submit your folder to the base repo that lives in the MLDS organization. Make sure your project folder is in the `submissions` folder, and then create a pull request that asks to merge changes from your forked repo to the base repo.
 
