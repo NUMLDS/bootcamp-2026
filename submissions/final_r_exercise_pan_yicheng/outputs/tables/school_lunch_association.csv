@@ -1,0 +1,7 @@
+poverty_group,subject,n_schools,correlation
+high,ela_z,1323,-0.510603593262242
+high,math_z,1323,-0.5267203499063375
+low,ela_z,1022,-0.7569698318827094
+low,math_z,1022,-0.7641500376194909
+medium,ela_z,1015,-0.5824622808173936
+medium,math_z,1014,-0.6339487628526755
