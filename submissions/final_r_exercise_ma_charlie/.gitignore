@@ -1,0 +1,12 @@
+# RStudio / R session files
+.Rproj.user/
+.Rhistory
+.RData
+.Ruserdata
+
+# macOS
+.DS_Store
+
+# knitr/rmarkdown intermediates
+*_cache/
+Rplots.pdf

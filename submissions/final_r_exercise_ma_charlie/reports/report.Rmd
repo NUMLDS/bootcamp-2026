@@ -1,0 +1,141 @@
+---
+title: "Poverty and Test Performance in New York Public Schools"
+author: "Charlie Ma"
+date: "`r Sys.Date()`"
+output:
+  html_document:
+    toc: true
+    toc_float: true
+    code_folding: show
+    pandoc_args: ["--resource-path=.."]
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE)
+knitr::opts_knit$set(root.dir = here::here())
+```
+
+```{r libraries}
+library(tidyverse)
+library(knitr)
+```
+
+```{r load}
+merged <- read_csv("data/processed/nys_merged.csv", show_col_types = FALSE) |>
+  mutate(poverty_group = factor(poverty_group, levels = c("low", "medium", "high")))
+
+tbl <- function(x) read_csv(paste0("output/tables/", x, ".csv"), show_col_types = FALSE)
+```
+
+## Question
+
+What does the data say about poverty and test performance in NY public schools —
+how big is the gap, is it closing, and does free/reduced lunch access change it?
+
+Data: `nys_schools.csv` (one row per school-year, 2008–2017, NYS Education
+Department) and `nys_acs.csv` (one row per county-year, 2009–2016, American
+Community Survey).
+
+## What I did
+
+**`1_clean.R`**
+
+- Recoded `-99` to `NA`. It appears in both numeric and character columns, so each type needs its own `na_if()`.
+- Dropped 24 exact duplicate rows, and 19 rows that were `-99` in every field but the school name.
+- Kept the 1,725 rows with a missing `district_name` — those are charter schools, which have no district. Dropping them would lose most of NYC.
+- Set `per_free_lunch` / `per_reduced_lunch` to `NA` where they exceed 1 (44 rows, max 257) or sum above 1 (42 rows). The two are mutually exclusive tiers of the same enrollment, so the sum can't exceed 100%.
+- Split counties into **terciles** of poverty rate (low ≤ 11.7%, medium 11.7–14.4%, high > 14.4%), pooled across years. Poverty clusters between 11% and 15%, so round cutoffs would empty the middle group; pooling keeps "high poverty" meaning the same thing in 2009 and 2016.
+- Converted scores to **z-scores within year**. The state changed its test in 2013 (max ELA ~720 → ~355), so raw scores aren't comparable across years.
+
+Result: 35,620 rows.
+
+**`2_transform.R`** — `left_join` on `county_name` **and** `year`. County alone
+fans each school-year across all 8 ACS years (284,960 rows). Left rather than
+inner keeps 2008 and 2017 usable for school-level questions.
+
+**`3_analyze.R`** / **`4_plot.R`** — summary tables and the two figures below.
+
+## Q1: How large is the gap?
+
+```{r q1-plot}
+include_graphics("output/figures/2_performance_by_poverty.png")
+```
+
+```{r q1}
+kable(tbl("by_poverty"), digits = 3,
+      caption = "Performance by county poverty tier, 2009-2016")
+```
+
+```{r q1-extremes}
+kable(tbl("extremes"), digits = 3, caption = "Top 5 and bottom 5 counties by poverty rate")
+```
+
+**About 0.67 SDs** between high- and low-poverty counties, near-identical in ELA
+and math. The extremes are wider: Bronx −0.77, Nassau +0.88. Tompkins is the
+exception — 4th-highest poverty but above average, because Cornell grad students
+inflate its poverty rate, which is a warning that county poverty is a rough proxy.
+
+## Q2: Has it changed over time?
+
+```{r q2-table}
+kable(tbl("gap_by_year"), digits = 3, caption = "Mean ELA z-score by tier, and the high-low gap")
+```
+
+**The gap halved, from 0.97 SDs in 2009 to 0.43 in 2016**, almost entirely
+because high-poverty counties improved (−0.53 → −0.10) rather than low-poverty
+counties slipping. Two caveats: the 2013 test change sits inside this window
+(though the yearly changes are even throughout, so it isn't an artifact), and
+z-scores measure relative position only — this shows the distribution
+compressing, not absolute learning gains.
+
+## Q3: Does lunch access moderate it?
+
+```{r q3-plot}
+include_graphics("output/figures/1_lunch_vs_score.png")
+```
+
+```{r q3-table}
+kable(tbl("by_lunch"), digits = 3, caption = "Mean ELA z-score by lunch-access tercile, within each poverty tier")
+```
+
+```{r q3-slopes}
+# Fit the school-level relationship separately in each poverty tier: if lunch
+# access moderated the effect, these slopes would differ.
+merged |>
+  filter(!is.na(poverty_group), !is.na(per_free_reduced), !is.na(mean_ela_score_z)) |>
+  group_by(poverty_group) |>
+  group_modify(~ {
+    fit <- lm(mean_ela_score_z ~ per_free_reduced, data = .x)
+    tibble(slope = coef(fit)[2], r_squared = summary(fit)$r.squared, n = nrow(.x))
+  }) |>
+  kable(digits = 3, caption = "Slope of ELA z-score on free/reduced lunch share")
+```
+
+**No.** The slopes are near-identical across tiers (−2.7, −2.4, −2.4), so lunch
+access doesn't soften the poverty relationship — it measures the same
+disadvantage better, explaining 46% of score variance on its own (pooled;
+the per-tier figures are in the table above). Within
+high-poverty counties alone, low- vs high-lunch-access schools differ by 1.21
+SDs, nearly twice the entire between-county gap.
+
+This is **eligibility, not treatment** — the variable counts students who
+*qualify* for assistance, so it proxies family poverty. Nothing here says
+anything about whether the meals help; every eligible student presumably
+receives them, so the data contains no variation in access to measure.
+
+## Takeaway
+
+The gap is large (0.67 SDs) and closing (0.97 → 0.43). But county poverty is the
+wrong targeting variable: school-level lunch share predicts performance better,
+is already collected, and identifies struggling schools inside wealthy counties
+that a county-level measure would miss.
+
+## Limitations
+
+- Correlational. Lunch access, county poverty and scores are all downstream of the same conditions.
+- County poverty is assigned to every school in the county, which isn't where poverty actually varies.
+- School mean scores hide within-school variation.
+- Z-scores are relative, so convergence can't be separated from a test that spreads schools less widely.
+- 2,208 ELA scores are missing; if smaller or poorer schools are likelier to be missing, these gaps are understated.
+- 2008 and 2017 drop out of county analyses for lack of ACS data.
+- Poverty tiers are assigned per county-year, and 38 of 62 counties change tier at some point, so the groups compared in Q2 are not a fixed set of counties.
