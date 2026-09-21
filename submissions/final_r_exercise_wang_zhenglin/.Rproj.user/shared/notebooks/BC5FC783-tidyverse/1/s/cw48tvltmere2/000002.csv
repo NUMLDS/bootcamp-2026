@@ -1,0 +1,12 @@
+"1","
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuZGYgfD4gYXJyYW5nZShkZXNjKGxpZmVFeHApKVxuYGBgIn0= -->
+
+```r
+df |> arrange(desc(lifeExp))
+```
+
+<!-- rnb-source-end -->
+"
+"0","```r
+df |> arrange(desc(lifeExp))
+```"

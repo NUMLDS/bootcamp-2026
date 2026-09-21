@@ -1,0 +1,14 @@
+"1","
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuZGZfYWZ0ZXIgPSBkZl9iZWZvcmUgfD4gcGl2b3Rfd2lkZXIobmFtZXNfZnJvbSA9IHllYXIsIHZhbHVlc19mcm9tID0gbGlmZUV4cClcbmRmX2FmdGVyXG5gYGAifQ== -->
+
+```r
+df_after = df_before |> pivot_wider(names_from = year, values_from = lifeExp)
+df_after
+```
+
+<!-- rnb-source-end -->
+"
+"0","```r
+df_after = df_before |> pivot_wider(names_from = year, values_from = lifeExp)
+df_after
+```"

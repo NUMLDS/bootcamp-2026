@@ -1,0 +1,14 @@
+"1","
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuZGYgfD4gc2VsZWN0KGNvdW50cnksIHllYXIsIGdkcFBlcmNhcClcbmRmIHw+IHNlbGVjdCgtY29udGluZW50KVxuYGBgIn0= -->
+
+```r
+df |> select(country, year, gdpPercap)
+df |> select(-continent)
+```
+
+<!-- rnb-source-end -->
+"
+"0","```r
+df |> select(country, year, gdpPercap)
+df |> select(-continent)
+```"
