@@ -11,4 +11,6 @@
 
 # bootcamp final project data
 **/data/processed/
-**/data/raw/nys_schools.csv
+**/data/raw/
+
+data/
