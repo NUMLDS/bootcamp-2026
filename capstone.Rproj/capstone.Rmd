@@ -1,0 +1,65 @@
+---
+title: "capstone"
+output: html_document
+---
+
+```{r}
+library(tidyverse)
+# school level
+# plot ela
+ggplot(
+  school_plot,
+  aes(x = free_reduced_lunch, y = mean_ela_z)
+) +
+  geom_point(alpha = 0.4) +
+  geom_smooth(method = "lm", se = FALSE) +
+  labs(
+    title = "The ELA Performance Decreased As Free/Reduced Price Lunch Access Increased",
+    x = "Average Percent Receiving Free/Reduced Price Lunch",
+    y = "Average Standardized ELA Score"
+  ) +
+  theme_minimal()
+
+# plot math
+ggplot(
+  school_plot,
+  aes(x = free_reduced_lunch, y = mean_math_z)
+) +
+  geom_point(alpha = 0.4) +
+  geom_smooth(method = "lm", se = FALSE) +
+  labs(
+    title = "The Math Performance Decreased As Free/Reduced Price Lunch Access Increased",
+    x = "Average Percent Receiving Free/Reduced Price Lunch",
+    y = "Average Standardized Math Score"
+  ) +
+  theme_minimal()
+
+# county level
+ggplot(
+  county_plot,
+  aes(x = poverty_group, y = mean_ela_z)
+) +
+  geom_boxplot() +
+  geom_jitter(width = 0.15, alpha = 0.5) +
+  labs(
+    title = "The ELA Performance Decreased as the Poverty Rate Increased",
+    x = "County Poverty Level",
+    y = "Average Standardized ELA Score"
+  ) +
+  theme_minimal()
+
+ggplot(
+  county_plot,
+  aes(x = poverty_group, y = mean_math_z)
+) +
+  geom_boxplot() +
+  geom_jitter(width = 0.15, alpha = 0.5) +
+  labs(
+    title = "The Math Performance Decreased As the Poverty Rate Increased",
+    x = "County Poverty Level",
+    y = "Average Standardized Math Score"
+  ) +
+  theme_minimal()
+```
+
+The results are expected: the test performance decreases as poverty rate and free/reduced lunch access increase.
