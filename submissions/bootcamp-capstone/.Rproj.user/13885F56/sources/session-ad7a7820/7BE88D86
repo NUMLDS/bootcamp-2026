@@ -1,0 +1,26 @@
+{
+    "id": "7BE88D86",
+    "path": "~/bootcamp-capstone/scripts/3_plot.R",
+    "project_path": "scripts/3_plot.R",
+    "type": "r_source",
+    "hash": "0",
+    "contents": "",
+    "dirty": false,
+    "created": 1790018470834.0,
+    "source_on_save": false,
+    "relative_order": 3,
+    "properties": {
+        "source_window_id": "",
+        "Source": "Source",
+        "cursorPosition": "62,7",
+        "scrollLine": "54"
+    },
+    "folds": "",
+    "lastKnownWriteTime": 1790019578,
+    "encoding": "UTF-8",
+    "collab_server": "",
+    "source_window": "",
+    "last_content_update": 1790019578949,
+    "read_only": false,
+    "read_only_alternatives": []
+}
