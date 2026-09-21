@@ -1,0 +1,21 @@
+library(tidyverse)
+raw <- read.csv('data/raw/country_attributes.csv')
+
+# Remove white space
+formatted <- raw |>
+  mutate(country= str_trim(country),
+           country = str_to_title(country))
+
+# Fix typos
+clean_names <- formatted |>
+  mutate(country = case_when(
+    country == "Brasil" ~ "Brazil",
+    country == "Usa" ~ "United States",
+    .default = country
+  ))
+
+# remove duplicates
+cleaned <- clean_names |> distinct()
+
+
+write_csv(cleaned, "data/processed/country_attributes_clean.csv")

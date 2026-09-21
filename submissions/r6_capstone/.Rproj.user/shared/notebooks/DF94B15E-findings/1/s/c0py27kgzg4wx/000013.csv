@@ -1,0 +1,7 @@
+"0","library(tidyverse)"
+"0","merged_data <- read_csv(""Desktop/data/processed/merged.csv"")"
+"1","[1m[33mError[39m:[22m
+[38;5;232m[33m![38;5;232m ]8;;file:///Users/manavdixit/Desktop/r6_capstone/Desktop/data/processed/merged.csv[34mDesktop/data/processed/merged.csv[38;5;232m]8;; does not exist in current working
+  directory: ]8;;file:///Users/manavdixit/Desktop/r6_capstone[34m/Users/manavdixit/Desktop/r6_capstone[38;5;232m]8;;.[39m
+[90mRun `]8;;x-r-run:rlang::last_trace()rlang::last_trace()]8;;` to see where the error occurred.[39m
+"

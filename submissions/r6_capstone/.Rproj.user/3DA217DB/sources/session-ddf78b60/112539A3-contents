@@ -1,0 +1,6 @@
+plot(
+  joined$dist_from_equator, joined$lifeExp,
+  xlab = " Distance from the Equator (degrees latitude)",
+  ylab = "Life Expectancy (years)",
+  main = "Life Expectancy is Higher Further From the Equator"
+)
