@@ -1,0 +1,63 @@
+---
+title: "Poverty and Test Performance in New York Public Schools"
+author: "Puhua Ye"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE)
+library(tidyverse)
+source("scripts/3_analyze.R")
+source("scripts/4_plot.R")
+```
+
+## Question
+
+This project studies the relationship between poverty and test performance in
+New York public schools.
+
+## Data and method
+
+The project uses school performance data and county ACS data. Duplicate rows
+were removed, and `-99` values were changed to missing values. Counties were
+divided into low, medium, and high poverty groups. Test scores were standardized
+within each year. The two datasets were joined by county and year.
+
+## Poverty and test performance
+
+```{r poverty-table}
+knitr::kable(poverty_group_summary, digits = 2)
+```
+
+```{r poverty-plot, fig.width=8, fig.height=5}
+poverty_plot
+```
+
+Schools in high-poverty counties have lower average reading and math scores.
+Schools in low-poverty counties have the highest average scores.
+
+## Change over time
+
+```{r year-plot, fig.width=9, fig.height=5}
+year_plot
+```
+
+The score gap between low- and high-poverty groups appears in every year. The
+size of the gap changes, but it does not disappear.
+
+## Free and reduced-price lunch
+
+```{r lunch-table}
+knitr::kable(poverty_lunch_summary, digits = 2)
+```
+
+Within each poverty group, schools with higher lunch eligibility have lower
+average scores. Lunch eligibility provides additional information about school
+poverty and test performance.
+
+## Conclusion
+
+Higher poverty is associated with lower test performance. This relationship
+continues over time and is also visible in school lunch eligibility. These
+results describe an association and do not prove that poverty causes lower test
+scores.
