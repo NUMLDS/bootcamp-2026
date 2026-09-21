@@ -1,0 +1,12 @@
+# Ignore raw and processed data
+data/raw/
+data/processed/
+
+# R / RStudio files
+.Rhistory
+.RData
+.Ruserdata
+.Rproj.user/
+
+# macOS
+.DS_Store
