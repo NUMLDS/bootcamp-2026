@@ -1,0 +1,14 @@
+# macOS
+.DS_Store
+ 
+# R
+.Rhistory
+.RData
+ 
+# Quarto
+/.quarto/
+*_cache/
+
+# Data files
+**/raw/processed
+**/data/processed
