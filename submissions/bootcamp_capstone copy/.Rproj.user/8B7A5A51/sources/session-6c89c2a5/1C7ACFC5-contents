@@ -1,0 +1,140 @@
+---
+title: "NYS Schools: Summary Tables and Plots"
+output: html_document
+---
+
+```{r setup, message=FALSE, warning=FALSE}
+library(tidyverse)
+library(knitr)
+
+# Use the full path so Knit works regardless of the Rmd location.
+data_path <- "/Users/rui_zhou/Desktop/MLDS BOOTCAMP/bootcamp_capstone/data/processed/merged_data.csv"
+merged_data <- read_csv(data_path, show_col_types = FALSE)
+
+# 2016 is the latest year with both school and county poverty data.
+analysis_data <- merged_data |>
+  filter(year == 2016) |>
+  mutate(
+    lunch_rate = per_free_lunch + per_reduced_lunch,
+    poverty_group = factor(poverty_group,
+                           levels = c("low", "medium", "high"))
+  )
+```
+
+## Task 5: Summary tables
+
+We use 2016 to compare schools and counties in the same year. County
+poverty data are missing for 2017. Missing observations are excluded from
+each calculation. Lunch eligibility is weighted by enrollment; test
+scores are averages of school mean scores.
+
+```{r county-summary}
+county_summary <- analysis_data |>
+  filter(!is.na(county_name)) |>
+  group_by(county_name) |>
+  summarise(
+    total_enrollment = sum(total_enroll, na.rm = TRUE),
+    lunch_percent = weighted.mean(lunch_rate, total_enroll,
+                                  na.rm = TRUE) * 100,
+    poverty_percent = first(county_per_poverty) * 100,
+    mean_ela = mean(mean_ela_score, na.rm = TRUE),
+    mean_math = mean(mean_math_score, na.rm = TRUE),
+    .groups = "drop"
+  )
+
+county_summary |>
+  select(county_name, total_enrollment, lunch_percent, poverty_percent) |>
+  arrange(county_name) |>
+  kable(digits = 1,
+        col.names = c("County", "Enrollment", "Free/reduced lunch (%)",
+                      "Poverty (%)"),
+        caption = "County enrollment, lunch eligibility, and poverty, 2016")
+```
+
+### Five highest- and five lowest-poverty counties
+
+```{r top-bottom-counties}
+top_five <- county_summary |>
+  filter(!is.na(poverty_percent)) |>
+  arrange(desc(poverty_percent), county_name) |>
+  slice_head(n = 5) |>
+  mutate(group = "Highest poverty")
+
+bottom_five <- county_summary |>
+  filter(!is.na(poverty_percent)) |>
+  arrange(poverty_percent, county_name) |>
+  slice_head(n = 5) |>
+  mutate(group = "Lowest poverty")
+
+bind_rows(top_five, bottom_five) |>
+  select(group, county_name, poverty_percent, lunch_percent,
+         mean_ela, mean_math) |>
+  kable(digits = 1,
+        col.names = c("Group", "County", "Poverty (%)",
+                      "Free/reduced lunch (%)", "Mean ELA", "Mean math"),
+        caption = "Counties at the two ends of the poverty distribution, 2016")
+```
+
+## Task 6: Simple visualizations
+
+### Lunch eligibility and school test performance
+
+Each point represents a school. The lines show associations, not causal
+effects. A z-score of zero is the statewide school average for that year.
+
+```{r school-scatter, fig.width=9, fig.height=4.5, message=FALSE}
+analysis_data |>
+  pivot_longer(c(math_z, ela_z),
+               names_to = "subject", values_to = "z_score") |>
+  mutate(subject = recode(subject, math_z = "Math", ela_z = "ELA")) |>
+  filter(!is.na(lunch_rate), !is.na(z_score)) |>
+  ggplot(aes(x = lunch_rate, y = z_score)) +
+  geom_point(alpha = 0.25, color = "steelblue") +
+  geom_smooth(method = "lm", se = FALSE, color = "darkred") +
+  facet_wrap(~ subject) +
+  scale_x_continuous(labels = scales::label_percent()) +
+  labs(title = "Higher lunch eligibility is associated with lower test scores",
+       subtitle = "Schools in 2016",
+       x = "Students eligible for free or reduced-price lunch",
+       y = "Test score (z-score)") +
+  theme_minimal()
+```
+
+### County performance by poverty group
+
+We first average schools within each county, then average counties within
+each poverty group. Each county receives equal weight. Poverty groups
+are the existing categories in the transformed dataset.
+
+```{r poverty-bars, fig.width=8, fig.height=4.5}
+county_scores <- analysis_data |>
+  filter(!is.na(county_name), !is.na(poverty_group)) |>
+  group_by(county_name, poverty_group) |>
+  summarise(
+    math_z = mean(math_z, na.rm = TRUE),
+    ela_z = mean(ela_z, na.rm = TRUE),
+    .groups = "drop"
+  )
+
+group_scores <- county_scores |>
+  group_by(poverty_group) |>
+  summarise(
+    math_z = mean(math_z, na.rm = TRUE),
+    ela_z = mean(ela_z, na.rm = TRUE),
+    .groups = "drop"
+  )
+
+group_scores |>
+  pivot_longer(c(math_z, ela_z),
+               names_to = "subject", values_to = "mean_z") |>
+  mutate(subject = recode(subject, math_z = "Math", ela_z = "ELA")) |>
+  ggplot(aes(x = poverty_group, y = mean_z)) +
+  geom_col(fill = "steelblue", width = 0.6) +
+  geom_hline(yintercept = 0, color = "gray40") +
+  facet_wrap(~ subject) +
+  labs(title = "Test performance differs across county poverty groups",
+       subtitle = "County averages in 2016",
+       x = "County poverty group",
+       y = "Average test score (z-score)") +
+  theme_minimal()
+```

@@ -1,0 +1,41 @@
+library(tidyverse)
+
+
+raw <- read_csv("data/raw/country_attributes.csv")
+
+head(raw)
+
+#view
+glimpse(raw)
+sum(duplicated(raw))
+n_distinct(raw$country)
+
+# formatting
+formatted <- raw |>
+  mutate(
+    country = str_trim(country),
+    country = str_to_title(country)
+  )
+
+?case_when
+
+# fix typos
+clean_names <- formatted |>
+  mutate(
+    country = case_when(
+      country == "Usa"    ~ "United States",
+      country == "Brasil" ~ "Brazil",
+      .default = country
+    )
+  )
+clean_names
+
+# remove duplicates
+cleaned <- clean_names |> distinct()
+
+# write out
+write_csv(cleaned, "data/processed/country_attributes_clean.csv")
+
+
+
+

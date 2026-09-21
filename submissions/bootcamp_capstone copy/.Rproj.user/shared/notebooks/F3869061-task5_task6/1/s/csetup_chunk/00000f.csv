@@ -1,0 +1,14 @@
+"0","library(tidyverse)"
+"0","library(knitr)"
+"0",""
+"0","# Find the data when this file is in the project root or script folder."
+"0","data_path <- ""data/processed/merged_data.csv"""
+"0","if (!file.exists(data_path)) {"
+"0","  data_path <- ""../data/processed/merged_data.csv"""
+"0","}"
+"0","merged_data <- read_csv(data_path, show_col_types = FALSE)"
+"1","[1m[33mError[39m:[22m
+[38;5;232m[33m![38;5;232m ]8;;file:///Users/rui_zhou/Documents/Codex/2026-09-21/for-x20/outputs/../data/processed/merged_data.csv[34m../data/processed/merged_data.csv[38;5;232m]8;; does not exist in current working directory:
+  ]8;;file:///Users/rui_zhou/Documents/Codex/2026-09-21/for-x20/outputs[34m/Users/rui_zhou/Documents/Codex/2026-09-21/for-x20/outputs[38;5;232m]8;;.[39m
+[90mRun `]8;;x-r-run:rlang::last_trace()rlang::last_trace()]8;;` to see where the error occurred.[39m
+"
