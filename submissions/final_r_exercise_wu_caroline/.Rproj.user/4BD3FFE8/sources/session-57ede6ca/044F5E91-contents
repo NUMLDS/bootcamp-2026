@@ -1,0 +1,12 @@
+library(dplyr)
+ 
+# Classify a country's climate zone based on its distance from the equator
+# (in degrees latitude).
+classify_equator_zone <- function(dist_from_equator) {
+  case_when(
+    is.na(dist_from_equator) ~ NA_character_,
+    dist_from_equator <= 23.5 ~ "Tropical",
+    dist_from_equator <= 66.5 ~ "Temperate",
+    .default = "Polar"
+  )
+}

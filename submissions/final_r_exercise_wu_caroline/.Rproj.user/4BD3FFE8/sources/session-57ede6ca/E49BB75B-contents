@@ -1,0 +1,8 @@
+joined <- read_csv("data/processed/final_gapminder_country_attributes_clean.csv")
+
+plot(
+  joined$dist_from_equator, joined$lifeExp,
+  xlab = "Distance from equator (degrees latitude)",
+  ylab = "Life expectancy (years)",
+  main = "Life Expectancy Is Higher Farther from the Equator"
+)
