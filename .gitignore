@@ -8,3 +8,4 @@
 # Quarto
 /.quarto/
 *_cache/
+.Rproj.user
