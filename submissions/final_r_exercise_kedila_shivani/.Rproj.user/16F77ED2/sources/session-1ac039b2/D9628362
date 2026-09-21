@@ -1,0 +1,26 @@
+{
+    "id": "D9628362",
+    "path": "~/Desktop/MLDS Bootcamp D2/demo-project/scripts/1_clean.R",
+    "project_path": null,
+    "type": "r_source",
+    "hash": "0",
+    "contents": "",
+    "dirty": false,
+    "created": 1790014863662.0,
+    "source_on_save": false,
+    "relative_order": 1,
+    "properties": {
+        "source_window_id": "",
+        "Source": "Source",
+        "cursorPosition": "17,5",
+        "scrollLine": "0"
+    },
+    "folds": "",
+    "lastKnownWriteTime": 1789628000,
+    "encoding": "UTF-8",
+    "collab_server": "",
+    "source_window": "",
+    "last_content_update": 1789628000,
+    "read_only": false,
+    "read_only_alternatives": []
+}
