@@ -1,0 +1,78 @@
+---
+title: "Exploring the Correlation between poverty and standardized test grades"
+output: html_document
+date: "2026-09-21"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, warning = FALSE, error = FALSE, message = FALSE)
+```
+
+```{r}
+library(tidyverse)
+data <- read_csv('data/processed/schools.csv')
+```
+
+# County's basic information 
+
+
+```{r}
+summary_1 <- data |>
+  group_by(county_name)|>
+  summarize(total_enrollment = sum(total_enroll),
+            mean_poverty = mean(county_per_poverty))
+summary_1
+```
+
+
+# Comparing test scores across different poverty level
+
+Because the scoring system varies across each years, tests score each years are standardized into z-scores based on scores from all schools that year so that they could be compared across multiple years.
+
+## Standardized Math Scores
+```{r}
+data |>
+  mutate(poverty_level = factor(poverty_level,
+                                   levels = c('Low','Medium','High'))) |>
+  ggplot(aes(x = poverty_level, y = std_math)) +
+  geom_boxplot()+
+  theme_minimal()+
+  labs(title = 'High poverty groups tend to have lower median math score',
+       subtitle = 'Poverty level defined by percent of poverty of each county in each year',
+       x = 'poverty level',
+       y = 'standardized math tests score')
+```
+
+## Standardized English Language Scores
+```{r}
+data |>
+  mutate(poverty_level = factor(poverty_level,
+                                levels = c('Low','Medium','High'))) |>
+  ggplot(aes(x = poverty_level, y = std_ela)) +
+  geom_boxplot()+
+  theme_minimal()+
+  labs(title = 'High poverty groups tend to have lower median score',
+       subtitle = 'Poverty level defined by percent of poverty of each county in each year',
+       x = 'poverty level',
+       y = 'standardized reading tests score')
+```
+
+# Correlation between 2 test scores
+
+```{r}
+data |>
+  mutate(poverty_level = factor(poverty_level,
+                                   levels = c('Low','Medium','High'))) |>
+  ggplot(aes(x = std_ela, y = std_math, color = poverty_level))+
+  geom_point(alpha = 0.2)+
+  theme_minimal()+
+    labs(title = 'There is a strong correlations between two test scores',
+       subtitle = 'The upper tail with both high scores is mostly of high poverty schools',
+       x = 'standardized reading tests score',
+       y = 'standardized math tests score')
+```
+
+
+
+
+
