@@ -1,0 +1,39 @@
+library(tidyverse)
+
+acs_transform <- acs_clean |>
+  group_by(year) |>
+  mutate(
+    poverty_group = case_when(
+      is.na(county_per_poverty) ~ NA_character_,
+      percent_rank(county_per_poverty) < 1 / 3 ~ "low",
+      percent_rank(county_per_poverty) < 2 / 3 ~ "medium",
+      TRUE ~ "high"
+    ),
+    poverty_group = factor(
+      poverty_group,
+      levels = c("low", "medium", "high"),
+      ordered = TRUE
+    )
+  ) |>
+  ungroup()
+
+school_transform <- school_clean |>
+  group_by(year) |>
+  mutate(
+    math_z = as.numeric(scale(mean_math_score)),
+    ela_z = as.numeric(scale(mean_ela_score))
+  ) |>
+  ungroup()
+
+merged_data <- school_transform |>
+  left_join(
+    acs_transform,
+    by = c("county_name", "year"),
+    relationship = "many-to-one"
+  )
+
+dir.create("data/processed", recursive = TRUE, showWarnings = FALSE)
+
+write_csv(school_transform, "data/processed/school_transform.csv")
+write_csv(acs_transform, "data/processed/acs_transform.csv")
+write_csv(merged_data, "data/processed/merged_data.csv")

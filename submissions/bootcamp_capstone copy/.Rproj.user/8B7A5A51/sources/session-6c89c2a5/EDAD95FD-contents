@@ -1,0 +1,208 @@
+---
+title: ""
+output: html_document
+---
+
+
+```{r setup, message=FALSE, warning=FALSE}
+library(tidyverse)
+library(knitr)
+
+merged_data <- read_csv(
+  "data/processed/merged_data.csv",
+  show_col_types = FALSE
+)
+
+# Use the latest year available
+analysis_year <- max(merged_data$year, na.rm = TRUE)
+
+analysis_data <- merged_data |>
+  filter(year == analysis_year) |>
+  mutate(
+    lunch_share = per_free_lunch + per_reduced_lunch,
+    poverty_group = factor(
+      poverty_group,
+      levels = c("low", "medium", "high")
+    )
+  )
+
+# Calculate an enrollment-weighted mean using valid observations
+weighted_average <- function(x, enrollment) {
+  valid <- !is.na(x) & !is.na(enrollment) & enrollment > 0
+
+  if (!any(valid)) return(NA_real_)
+
+  weighted.mean(x[valid], enrollment[valid])
+}
+
+safe_mean <- function(x) {
+  if (all(is.na(x))) return(NA_real_)
+  mean(x, na.rm = TRUE)
+}
+```
+
+This analysis uses data from `r analysis_year`. Missing values are
+excluded from the relevant calculations, rather than treated as zero.
+
+## Task 5: Summary Tables
+
+### County enrollment, lunch eligibility, and poverty
+
+Lunch eligibility is weighted by school enrollment, so larger schools
+contribute proportionally more to the county percentage.
+
+```{r county-summary}
+county_summary <- analysis_data |>
+  filter(!is.na(county_name)) |>
+  group_by(county_name) |>
+  summarise(
+    total_enrollment = if (all(is.na(total_enroll))) {
+      NA_real_
+    } else {
+      sum(total_enroll, na.rm = TRUE)
+    },
+    lunch_share = weighted_average(lunch_share, total_enroll),
+    poverty_rate = safe_mean(county_per_poverty),
+    mean_ela = safe_mean(mean_ela_score),
+    mean_math = safe_mean(mean_math_score),
+    .groups = "drop"
+  )
+
+county_summary |>
+  arrange(desc(poverty_rate)) |>
+  transmute(
+    County = county_name,
+    `Total enrollment` = total_enrollment,
+    `Free/reduced lunch (%)` = lunch_share * 100,
+    `Population in poverty (%)` = poverty_rate * 100
+  ) |>
+  kable(
+    digits = 1,
+    caption = paste("County summary:", analysis_year)
+  )
+```
+
+Enrollment totals describe schools included in this dataset.
+Lunch percentages use schools with observed lunch eligibility and
+positive enrollment.
+
+### Counties with the highest and lowest poverty rates
+
+The table shows five counties at each end of the poverty distribution.
+County name breaks ties at the selection boundary. Test scores are
+unweighted averages of school mean scores.
+
+```{r highest-lowest-poverty}
+eligible_counties <- county_summary |>
+  filter(!is.na(poverty_rate))
+
+highest_poverty <- eligible_counties |>
+  arrange(desc(poverty_rate), county_name) |>
+  slice_head(n = 5) |>
+  mutate(Group = "Highest poverty")
+
+lowest_poverty <- eligible_counties |>
+  arrange(poverty_rate, county_name) |>
+  slice_head(n = 5) |>
+  mutate(Group = "Lowest poverty")
+
+bind_rows(highest_poverty, lowest_poverty) |>
+  transmute(
+    Group,
+    County = county_name,
+    `Population in poverty (%)` = poverty_rate * 100,
+    `Free/reduced lunch (%)` = lunch_share * 100,
+    `Mean ELA score` = mean_ela,
+    `Mean math score` = mean_math
+  ) |>
+  kable(
+    digits = 1,
+    caption = paste("Highest- and lowest-poverty counties:", analysis_year)
+  )
+```
+
+## Task 6: Data Visualization
+
+### School lunch eligibility and test performance
+
+Each point represents a school. The fitted line summarizes the
+association; it does not establish that lunch eligibility causes
+differences in performance.
+
+```{r school-performance, fig.width=9, fig.height=5}
+school_plot_data <- analysis_data |>
+  select(lunch_share, math_z, ela_z) |>
+  pivot_longer(
+    cols = c(math_z, ela_z),
+    names_to = "subject",
+    values_to = "z_score"
+  ) |>
+  mutate(
+    subject = recode(subject, math_z = "Math", ela_z = "ELA")
+  ) |>
+  filter(!is.na(lunch_share), !is.na(z_score))
+
+ggplot(school_plot_data, aes(x = lunch_share, y = z_score)) +
+  geom_point(alpha = 0.25, color = "#287C8E") +
+  geom_smooth(method = "lm", se = FALSE, color = "#B34932") +
+  facet_wrap(~ subject) +
+  scale_x_continuous(labels = scales::label_percent()) +
+  labs(
+    title = "Lunch eligibility and school test performance",
+    subtitle = paste("Each point represents a school in", analysis_year),
+    x = "Students qualifying for free or reduced-price lunch",
+    y = "Standardized test score (z-score)",
+    caption = "A score of 0 represents the statewide school mean for that year."
+  ) +
+  theme_minimal(base_size = 12) +
+  theme(panel.grid.minor = element_blank())
+```
+
+### County test performance by poverty group
+
+First, school z-scores are averaged within each county. Then county
+averages are averaged within each poverty group, giving each county
+equal weight.
+
+```{r poverty-performance, fig.width=8, fig.height=5}
+county_performance <- analysis_data |>
+  filter(!is.na(county_name), !is.na(poverty_group)) |>
+  group_by(county_name, poverty_group) |>
+  summarise(
+    math_z = safe_mean(math_z),
+    ela_z = safe_mean(ela_z),
+    .groups = "drop"
+  )
+
+poverty_performance <- county_performance |>
+  group_by(poverty_group) |>
+  summarise(
+    across(c(math_z, ela_z), safe_mean),
+    .groups = "drop"
+  ) |>
+  pivot_longer(
+    cols = c(math_z, ela_z),
+    names_to = "subject",
+    values_to = "mean_z"
+  ) |>
+  mutate(
+    subject = recode(subject, math_z = "Math", ela_z = "ELA")
+  )
+
+ggplot(poverty_performance, aes(x = poverty_group, y = mean_z)) +
+  geom_hline(yintercept = 0, linetype = "dashed", color = "gray60") +
+  geom_point(size = 4, color = "#287C8E") +
+  facet_wrap(~ subject) +
+  scale_x_discrete(
+    labels = c(low = "Low", medium = "Medium", high = "High")
+  ) +
+  labs(
+    title = "County test performance by poverty group",
+    subtitle = paste("County averages receive equal weight —", analysis_year),
+    x = "County poverty group",
+    y = "Average standardized test score",
+    caption = "Poverty groups represent thirds of county poverty rankings."
+  ) +
+  theme_minimal(base_size = 12) +
+  theme(panel.grid.minor = element_blank())
+```
