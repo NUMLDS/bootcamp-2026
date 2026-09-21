@@ -1,0 +1,480 @@
+---
+title: "Poverty and Test Performance in New York Public Schools"
+subtitle: "MLDS Boot Camp - Final R Exercise"
+author: "Haowen Chen"
+date: "`r Sys.Date()`"
+output:
+  html_document:
+    toc: true
+    toc_float: true
+    theme: flatly
+    code_folding: show
+---
+
+```{r setup, include = FALSE}
+# Global chunk options. This .Rmd sits at the project root, so chunks already
+# run from there and the relative paths used in the scripts
+# (data/raw/..., data/processed/...) work exactly as they do in a plain
+# R session.
+knitr::opts_chunk$set(
+  echo    = TRUE,
+  message = FALSE,
+  warning = FALSE
+)
+```
+
+## The question
+
+The Department has asked:
+
+> What can data tell us about the relationship between poverty and test
+> performance in New York public schools?
+
+with three follow-ups: how test performance differs between low, medium and
+high poverty areas; whether that relationship has changed over time; and
+whether access to free / reduced price lunch moderates it.
+
+## Brainstorming (before looking at the data)
+
+**Empathize - why is the stakeholder asking?**
+The Department allocates funding and support programs across districts. A
+documented poverty-performance gap is the evidence base for where those
+dollars go, and the free/reduced price lunch question is really asking
+whether an existing intervention appears to help.
+
+**Brainstorm - what would help answer it?**
+County-level poverty rates joined to school-level test results; a scatter of
+school performance against free/reduced lunch share; average standardized
+scores by poverty tier, faceted or coloured by year to show change over time.
+
+**Expected insights.**
+I expect a clear negative association between county poverty and test
+performance, fairly stable across years, and a lunch-access relationship that
+is confounded with poverty rather than obviously protective on its own - the
+schools with the most lunch access are also the poorest. Worth stating up
+front so I do not read the confound as an effect later.
+
+## Project structure
+
+```
+final_r_exercise/
+├── final_r_exercise.Rproj
+├── run_all.R              # runs the pipeline from a fresh session
+├── README.md
+├── analysis_notebook.Rmd  # this file
+├── data/
+│   ├── raw/               # nys_schools.csv, nys_acs.csv (downloaded, untouched)
+│   └── processed/         # outputs of the cleaning / merging steps
+├── scripts/
+│   ├── 0_import.R         # Task 1 - read the raw CSVs
+│   ├── 1_clean.R          # Task 3 - missing values, poverty groups, z-scores
+│   ├── 2_transform.R      # Task 4 - join schools + ACS
+│   ├── 3_analyze.R        # Task 5 - summary tables
+│   └── 4_plot.R           # Task 6 - visualizations
+└── output/                # saved figures
+```
+
+One script per job, each loading the tidyverse itself, so any step can be
+re-run without sourcing the whole chain by hand.
+
+## Task 1: Import the data
+
+The two raw files are downloaded into `data/raw/` and left exactly as they
+came:
+
+* `nys_schools.csv` - school-level records from the
+  [NYS Department of Education](http://data.nysed.gov/downloads.php)
+* `nys_acs.csv` - county-level American Community Survey data from the US
+  Census Bureau
+
+`read_csv()` is used rather than base `read.csv()`: it returns a tibble, keeps
+character columns as characters, and reports the column types it inferred.
+The `-99` missing-value code is *not* touched at this stage - the import is a
+faithful copy of what is on disk, and recoding belongs in the cleaning script.
+
+```{r import}
+source(file.path("scripts", "0_import.R"))
+```
+
+## Task 2: Explore the data
+
+```{r explore-schools}
+glimpse(nys_schools)
+```
+
+`nys_schools` has 35,663 rows and 12 columns: identifiers (`school_cd`,
+`school_name`, `district_name`, `county_name`, `region`), `year`, and the
+numeric measures (`total_enroll`, `per_free_lunch`, `per_reduced_lunch`,
+`per_lep`, `mean_ela_score`, `mean_math_score`). One school-year per row.
+
+```{r explore-acs}
+glimpse(nys_acs)
+```
+
+`nys_acs` is much smaller - 496 rows, 5 columns - one county-year per row:
+`county_name`, `year`, `county_per_poverty`, `median_household_income`,
+`county_per_bach`.
+
+**Missing data.** The codebook says missing values are coded `-99` rather
+than `NA`, so a plain `is.na()` undercounts them. Counting `-99` directly:
+
+```{r explore-missing}
+count_neg99 <- function(x) if (is.numeric(x)) sum(x == -99, na.rm = TRUE) else sum(x == "-99", na.rm = TRUE)
+
+sapply(nys_schools, count_neg99)
+```
+
+A few things stood out:
+
+* `mean_ela_score` and `mean_math_score` are `-99` for ~2,200 rows each (about
+  6% of school-years) - schools that didn't administer/report a test that
+  year.
+* Oddly, `-99` also shows up as the *string* `"-99"` in three character
+  columns (`county_name`, `district_name`, `region`), all in the same 19
+  rows - a school record with no location info at all.
+* `district_name` also has real `NA`s (about 1,700, unrelated to `-99`) -
+  these turned out to be charter schools, which don't belong to a
+  traditional district, so a blank district is legitimate rather than
+  missing data.
+* `nys_acs` has no `-99` values at all - it's a much cleaner extract.
+* `county_per_poverty` ranges from about 4.7% to 30%, with a median around
+  12.9%.
+* `per_free_lunch` and `per_reduced_lunch` are meant to be proportions
+  (0-1), but 44 and 2 rows respectively exceed 1 - most are mild overshoots
+  (1.01-1.87, likely rounding/double-counting), plus a couple of extreme
+  outliers (257, 53) that are clearly data-entry errors.
+
+```{r explore-pct-over-1}
+nys_schools %>% filter(per_free_lunch > 1 | per_reduced_lunch > 1) %>%
+  select(school_name, year, per_free_lunch, per_reduced_lunch) %>%
+  arrange(desc(per_free_lunch))
+```
+
+## Task 3: Recoding and variable manipulation
+
+```{r clean}
+source(file.path("scripts", "1_clean.R"))
+```
+
+`scripts/1_clean.R` does the following:
+
+**1. Drop exact duplicate rows.** `distinct()` removes 24 fully duplicated
+rows in `nys_schools` (identical in every column) before anything else, so
+they aren't double-counted later.
+
+**2. Recode `-99` to `NA`.** The three character columns that store `-99`
+as a literal string (`county_name`, `district_name`, `region`) are handled
+explicitly with `na_if()`; every numeric column is handled in one pass with
+`across(where(is.numeric), ~ na_if(.x, -99))`.
+
+**Lunch percentages above 1 set to `NA`.** `per_free_lunch` /
+`per_reduced_lunch` should be proportions (0-1); values above 1 (up to 257)
+are treated as unreliable and set to `NA` rather than capped, since there's
+no way to tell which out-of-range values are close to correct and which are
+outright errors.
+
+```{r cap-check}
+nys_schools_clean %>% summarise(max_free = max(per_free_lunch, na.rm = TRUE), max_reduced = max(per_reduced_lunch, na.rm = TRUE))
+```
+
+**3. Poverty groups.** Counties are split into `"low"` / `"medium"` /
+`"high"` poverty tertiles using `dplyr::ntile(county_per_poverty, 3)`,
+computed **within each year** (`group_by(year)`). Tertiles were chosen over
+a fixed cutoff (e.g. "poverty > 20% = high") because they guarantee
+balanced group sizes regardless of how the poverty distribution shifts, and
+splitting within year rather than pooling all years keeps "high poverty"
+meaning "relatively poor compared to other counties *that year*" - useful
+since we also want to look at whether the poverty/performance relationship
+holds up over time.
+
+```{r poverty-groups-check}
+nys_acs_clean %>% count(year, poverty_group) %>% pivot_wider(names_from = poverty_group, values_from = n)
+```
+
+**4. Standardized test scores.** The state's exam changes from year to
+year, so raw scale scores aren't comparable across years. `mean_math_score`
+and `mean_ela_score` are converted to within-year z-scores
+(`group_by(year)` + `scale()`), so a value of e.g. `+1` means "one SD above
+that year's average" no matter which year it is.
+
+```{r zscore-check}
+nys_schools_clean %>%
+  group_by(year) %>%
+  summarise(math_mean = mean(math_z, na.rm = TRUE), math_sd = sd(math_z, na.rm = TRUE)) %>%
+  head()
+```
+
+Each year's `math_z` has mean ~0 and SD 1, as expected.
+
+The cleaned tables are saved to `data/processed/nys_schools_clean.csv` and
+`data/processed/nys_acs_clean.csv`.
+
+## Task 4: Merge the datasets
+
+```{r merge}
+source(file.path("scripts", "2_transform.R"))
+```
+
+**Join key:** `county_name` + `year`. All 62 county names match exactly
+between the two files, so no name-cleaning was needed before joining.
+
+**Join type:** `left_join(nys_schools_clean, nys_acs_clean, ...)`, with
+schools as the base table. `nys_schools_clean` spans 2008-2017 but
+`nys_acs_clean` only covers 2009-2016, so a `left_join` keeps every school
+record and leaves the ACS columns `NA` for years outside that range, rather
+than an `inner_join` silently dropping those school-years entirely.
+
+```{r merge-check}
+nys_merged %>% summarise(
+  n_rows          = n(),
+  n_no_acs_match  = sum(is.na(county_per_poverty)),
+  pct_no_acs_match = round(100 * n_no_acs_match / n_rows, 1)
+)
+```
+
+About 20% of rows (school-years from 2008 and 2017) have no county-level
+data as a result. This is a real coverage gap in the ACS source, not a join
+bug -- worth keeping in mind since it means the poverty-related tables and
+plots below implicitly cover 2009-2016 only.
+
+The merged dataset is saved to `data/processed/nys_merged.csv`.
+
+## Task 5: Summary tables
+
+```{r analyze}
+source(file.path("scripts", "3_analyze.R"))
+```
+
+**Table 5.1 -- one row per county:** total enrollment, % of students on
+free/reduced lunch, % of the county population in poverty. Each number is a
+county-year average first, then averaged again across all years available,
+so one county isn't over- or under-represented just because it has more
+years of data than another.
+
+```{r table-county-summary}
+table_county_summary %>% arrange(desc(pct_poverty))
+```
+
+**Table 5.2 -- top 5 / bottom 5 counties by poverty rate:** poverty rate,
+free/reduced lunch %, and mean standardized ELA/math performance, side by
+side. Z-scores are used because the raw state test scale changes across
+years and cannot be averaged meaningfully over the full period.
+
+```{r table-top-bottom-poverty}
+table_top_bottom_poverty
+```
+
+The two lunch-access columns (`pct_free_reduced_lunch` next to
+`pct_poverty`) already hint at the answer to the department's third
+question -- they move together almost in lockstep across both groups of
+counties.
+
+## Task 6: Data visualization
+
+```{r plots}
+source(file.path("scripts", "4_plot.R"))
+```
+
+Building these plots surfaced two data-quality issues beyond what Task 3
+covered:
+
+* **42 school-years have `per_free_lunch + per_reduced_lunch > 1`** (up to
+  186% combined), even though each column individually is <= 1 -- a
+  logical impossibility that the single-column check in `1_clean.R` didn't
+  catch. These 42 rows are excluded from the scatter plot below only (not
+  from the saved processed data), so the x-axis doesn't run past 100%.
+* **A handful of schools have extreme z-scores** (as low as -11.7 SD) --
+  e.g. EDENWALD SCHOOL, a residential/juvenile-justice facility in the
+  Bronx. That's plausibly a genuinely atypical student population rather
+  than a data error, so these are left untouched in every table and plot;
+  it's noted here as a limitation rather than corrected.
+
+**Plot 1 -- lunch access vs. test performance, at the school level:**
+
+```{r plot1, echo = FALSE}
+p1_lunch_vs_performance
+```
+
+**Plot 2 -- average test performance by county poverty group:**
+
+```{r plot2, echo = FALSE}
+p2_performance_by_poverty
+```
+
+**Plot 3 (bonus) -- has the gap changed over time?**
+
+```{r plot3, echo = FALSE}
+p3_trend_by_poverty
+```
+
+All three figures are also saved to `output/` as PNGs.
+
+## Task 7: Findings
+
+```{r task7-evidence-setup, include = FALSE}
+# Recalculate every number used in the conclusions from the analysis data.
+# Keeping these values in code prevents the prose from drifting away from
+# the figures if the data or earlier cleaning decisions change.
+task7_data <- plot_data %>%
+  filter(
+    !is.na(overall_z),
+    !is.na(pct_free_reduced),
+    pct_free_reduced <= 1,
+    !is.na(county_per_poverty),
+    !is.na(poverty_group)
+  )
+
+poverty_performance_r <- cor(
+  task7_data$county_per_poverty,
+  task7_data$overall_z
+)
+lunch_performance_r <- cor(
+  task7_data$pct_free_reduced,
+  task7_data$overall_z
+)
+poverty_lunch_r <- cor(
+  task7_data$county_per_poverty,
+  task7_data$pct_free_reduced
+)
+
+poverty_group_means <- task7_data %>%
+  group_by(poverty_group) %>%
+  summarise(mean_z = mean(overall_z), .groups = "drop") %>%
+  mutate(poverty_group = as.character(poverty_group)) %>%
+  tibble::deframe()
+
+low_high_gap <- poverty_group_means[["low"]] -
+  poverty_group_means[["high"]]
+
+year_gaps <- task7_data %>%
+  group_by(year, poverty_group) %>%
+  summarise(mean_z = mean(overall_z), .groups = "drop") %>%
+  pivot_wider(names_from = poverty_group, values_from = mean_z) %>%
+  mutate(gap = low - high)
+
+gap_2009 <- year_gaps$gap[year_gaps$year == 2009]
+gap_2016 <- year_gaps$gap[year_gaps$year == 2016]
+gap_reduction <- 1 - gap_2016 / gap_2009
+
+# Exploratory moderation check: both predictors are standardized so the
+# interaction is numerically stable. Year indicators absorb broad annual
+# shifts. This simple model is descriptive, not a causal estimate.
+moderation_data <- task7_data %>%
+  mutate(
+    poverty_std = as.numeric(scale(county_per_poverty)),
+    lunch_std = as.numeric(scale(pct_free_reduced))
+  )
+
+moderation_model <- lm(
+  overall_z ~ poverty_std * lunch_std + factor(year),
+  data = moderation_data
+)
+moderation_p <- coef(summary(moderation_model))[
+  "poverty_std:lunch_std",
+  "Pr(>|t|)"
+]
+
+task7_evidence <- tibble(
+  Measure = c(
+    "County poverty vs. test performance",
+    "Free/reduced-lunch share vs. test performance",
+    "County poverty vs. lunch share",
+    "Mean performance: low / medium / high poverty",
+    "Low- vs. high-poverty gap: 2009 / 2016",
+    "Exploratory poverty x lunch interaction"
+  ),
+  `Data result` = c(
+    sprintf("r = %.2f", poverty_performance_r),
+    sprintf("r = %.2f", lunch_performance_r),
+    sprintf("r = %.2f", poverty_lunch_r),
+    sprintf(
+      "%+.2f / %+.2f / %+.2f z",
+      poverty_group_means[["low"]],
+      poverty_group_means[["medium"]],
+      poverty_group_means[["high"]]
+    ),
+    sprintf("%.2f / %.2f z (%.0f%% narrower)",
+            gap_2009, gap_2016, 100 * gap_reduction),
+    sprintf("p = %.3f", moderation_p)
+  )
+)
+```
+
+**Conclusion:** Higher-poverty settings have lower average test performance.
+The low- versus high-poverty difference is about
+`r sprintf("%.2f", low_high_gap)` standard deviations overall, and it remains
+visible in 2016 even after narrowing from its 2009 level. Free/reduced-price
+lunch eligibility is also strongly associated with lower scores, but this
+descriptive analysis does **not** establish that lunch access changes the
+strength of the poverty-performance relationship.
+
+### Evidence at a glance
+
+```{r task7-evidence-table, echo = FALSE}
+knitr::kable(task7_evidence, align = c("l", "l"))
+```
+
+### What can data tell us about the relationship between poverty and test performance in New York public schools?
+
+**Higher poverty is associated with lower test performance, although these
+data do not prove that poverty causes lower scores.** Across the complete
+school-year records, county poverty and average math/ELA performance have a
+correlation of **r = `r sprintf("%.2f", poverty_performance_r)`**. At the
+school level, the share of students qualifying for free/reduced-price lunch
+has an even stronger negative correlation with performance
+(**r = `r sprintf("%.2f", lunch_performance_r)`**; Plot 1). The spread of
+scores at every poverty and lunch level shows that economic disadvantage is
+important, but it is not the only factor related to school performance.
+
+### What's the difference in test performance between low, medium and high poverty areas?
+
+**Performance decreases at each step from low- to high-poverty counties.**
+Average school-level math/ELA performance is
+**`r sprintf("%+.2f", poverty_group_means[["low"]])` z** in low-poverty
+counties, **`r sprintf("%+.2f", poverty_group_means[["medium"]])` z** in
+medium-poverty counties, and
+**`r sprintf("%+.2f", poverty_group_means[["high"]])` z** in high-poverty
+counties (Plot 2). The low- versus high-poverty difference is therefore
+**`r sprintf("%.2f", low_high_gap)` standard deviations**, a substantial
+descriptive gap.
+
+### Has this relationship changed over time?
+
+**The gap is smaller at the end of the period, but it does not disappear.**
+The low- versus high-poverty difference falls from
+**`r sprintf("%.2f", gap_2009)` z in 2009** to
+**`r sprintf("%.2f", gap_2016)` z in 2016**, a reduction of approximately
+**`r sprintf("%.0f", 100 * gap_reduction)`%** (Plot 3). This is an endpoint
+comparison rather than evidence of a steady or causal trend, but it shows
+that the observed gap was meaningfully narrower in 2016 while remaining
+large.
+
+### Is this relationship at all moderated by access to free/reduced price lunch?
+
+**This analysis does not find clear evidence that lunch eligibility
+moderates the poverty-performance relationship.** County poverty and the
+school free/reduced-lunch share are themselves strongly related
+(**r = `r sprintf("%.2f", poverty_lunch_r)`**), which makes their separate
+roles difficult to isolate. In an exploratory model with poverty, lunch
+share, their interaction, and year indicators, the interaction has
+**p = `r sprintf("%.3f", moderation_p)`**. That is just above the conventional
+0.05 threshold, so the correct conclusion is **inconclusive evidence of
+moderation**, not proof that moderation is absent. A stronger answer would
+require a model designed for repeated school observations and additional
+school/community covariates.
+
+### Limitations
+
+* The merged dataset only has complete poverty/lunch data for 2009-2016;
+  2008 and 2017 school records exist but can't be placed into a poverty
+  group.
+* A few schools (e.g. residential/juvenile-justice facilities) have
+  extreme scores that weren't corrected or removed -- they're real data
+  points, but atypical ones, and readers should keep that in mind since
+  they are included in the analysis above.
+* Everything here is a correlational read of aggregated school- and
+  county-level averages, not a causal or student-level analysis -- it says
+  where the gaps are, not what's driving them or what would close them.
+* The moderation model is exploratory and treats repeated school-year
+  observations as independent. Its p-value should be read as a screening
+  result, not a definitive policy finding.
