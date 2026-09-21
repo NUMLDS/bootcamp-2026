@@ -1,0 +1,26 @@
+{
+    "id": "3E85A54B",
+    "path": "~/Day1R/R_capstone/scripts/2_transform.R",
+    "project_path": "scripts/2_transform.R",
+    "type": "r_source",
+    "hash": "4238552850",
+    "contents": "",
+    "dirty": false,
+    "created": 1790015588179.0,
+    "source_on_save": false,
+    "relative_order": 4,
+    "properties": {
+        "source_window_id": "",
+        "Source": "Source",
+        "cursorPosition": "40,0",
+        "scrollLine": "18"
+    },
+    "folds": "",
+    "lastKnownWriteTime": 1790019614,
+    "encoding": "UTF-8",
+    "collab_server": "",
+    "source_window": "",
+    "last_content_update": 1790019614675,
+    "read_only": false,
+    "read_only_alternatives": []
+}

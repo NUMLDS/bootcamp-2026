@@ -1,0 +1,26 @@
+{
+    "id": "B0005F5A",
+    "path": "~/Day1R/R_capstone/scripts/3_analyze.R",
+    "project_path": "scripts/3_analyze.R",
+    "type": "r_source",
+    "hash": "2276019437",
+    "contents": "",
+    "dirty": false,
+    "created": 1790015592298.0,
+    "source_on_save": false,
+    "relative_order": 5,
+    "properties": {
+        "source_window_id": "",
+        "Source": "Source",
+        "cursorPosition": "51,19",
+        "scrollLine": "30"
+    },
+    "folds": "",
+    "lastKnownWriteTime": 1790019611,
+    "encoding": "UTF-8",
+    "collab_server": "",
+    "source_window": "",
+    "last_content_update": 1790019611325,
+    "read_only": false,
+    "read_only_alternatives": []
+}
