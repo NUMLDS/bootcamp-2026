@@ -10,7 +10,7 @@ This GitHub repo contains materials for the technical sessions of the boot camp.
 | Tues, 9/15 | Tech 1 | Command Line | [Command Line Slides](https://github.com/NUMLDS/bootcamp-2026/blob/main/day2/tech_command_line/mlds_bootcamp_command_line.pdf)
 | Thurs, 9/17 | R4 | R Workflow | [1. R Slides](https://NUMLDS.github.io/bootcamp-2026/r4_project_workflow.html) <br /> [2. Project](https://github.com/NUMLDS/bootcamp-2026/blob/main/day3/session4/demo-project.zip)
 | Thurs, 9/17 | Tech 2 | Git / GitHub | [Git / GitHub Slides](https://github.com/NUMLDS/bootcamp-2026/blob/main/day3/tech_git_github/mlds_bootcamp_git_github.pdf)
-| Mon, 9/21 | R5 | ggplot2
+| Mon, 9/21 | R5 | ggplot2 | [1. R Slides](https://NUMLDS.github.io/bootcamp-2026/r5_ggplot_summary.html) <br /> [2. Data](https://github.com/NUMLDS/bootcamp-2026/blob/main/day4/session5/gapminder.csv)
 | Mon, 9/21 | R6 | Capstone
 
 *Materials developed and maintained by Alice Zhao for the NU MLDS program.*
