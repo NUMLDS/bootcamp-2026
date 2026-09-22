@@ -1,0 +1,83 @@
+---
+title: "R6 Capstone Exercise"
+output: html_notebook
+---
+
+This is an [R Markdown](http://rmarkdown.rstudio.com) Notebook. When you execute code within the notebook, the results appear beneath the code. 
+
+Try executing this chunk by clicking the *Run* button within the chunk or by placing your cursor inside it and pressing *Ctrl+Shift+Enter*. 
+
+```{r}
+library(readr)
+nys_acs <- read_csv("data/nys_acs.csv")
+nys_schools <- read_csv("data/nys_schools.csv")
+```
+
+```{r}
+library(tidyverse)
+schools_clean <- nys_schools |> distinct() |>
+  mutate(county_name = na_if(county_name, "-99"),
+         across(where(is.numeric), ~na_if(.x,-99)),
+         per_free_lunch = if_else(per_free_lunch >1, NA_real_, per_free_lunch),
+         per_reduced_lunch = if_else(per_reduced_lunch >1, NA_real_, per_reduced_lunch)
+         )
+```
+
+
+```{r}
+acs_clean <- nys_acs |> distinct() |>
+   mutate(across(where(is.numeric), ~na_if(.x,-99)))
+```
+
+
+```{r}
+write.csv(schools_clean,"processed data/schools_clean.csv")
+write.csv(acs_clean,"processed data/acs_clean.csv")
+```
+
+
+```{r}
+LIQR <- quantile(nys_acs$median_household_income, probs = c(0.25))
+UIQR <- quantile(nys_acs$median_household_income, probs = c(0.75))
+
+acs_clean2 <- acs_clean |> 
+  mutate(poverty_group = if_else(median_household_income > UIQR, "high",
+                            if_else(median_household_income < LIQR, "low","medium")))
+
+schools_clean2 <- schools_clean |>
+  group_by(year) |>
+  mutate(math_z = scale(mean_math_score),
+         ELA_z = scale(mean_ela_score))
+```
+
+```{r}
+write.csv(schools_clean2,"processed data/schools_clean2.csv")
+write.csv(acs_clean2,"processed data/acs_clean2.csv")
+```
+
+
+```{r}
+merged_data <- schools_clean2 |> left_join(acs_clean2, by = c("county_name", "year"))
+
+```
+
+
+```{r}
+library(ggplot2)
+
+ggplot(merged_data) + geom_point(aes(x = per_free_lunch, y = math_z, color = region))
+
+ggplot(merged_data) + geom_col(aes(x = poverty_group, y = math_z, color = poverty_group))
+
+```
+
+
+
+```
+
+
+Add a new chunk by clicking the *Insert Chunk* button on the toolbar or by pressing *Ctrl+Alt+I*.
+
+When you save the notebook, an HTML file containing the code and output will be saved alongside it (click the *Preview* button or press *Ctrl+Shift+K* to preview the HTML file).
+
+The preview shows you a rendered HTML copy of the contents of the editor. Consequently, unlike *Knit*, *Preview* does not run any R code chunks. Instead, the output of the chunk when it was last run in the editor is displayed.
