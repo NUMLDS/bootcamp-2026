@@ -1,0 +1,14 @@
+# RStudio / R session files
+.Rproj.user/
+.Rhistory
+.RData
+.Ruserdata
+
+# Rendered notebook cache
+*_cache/
+*_files/
+
+# Match the class repository policy: keep the smaller ACS source file and
+# codebook, but do not commit the large school file or generated datasets.
+data/raw/nys_schools.csv
+data/processed/
