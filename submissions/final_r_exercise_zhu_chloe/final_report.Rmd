@@ -1,0 +1,273 @@
+---
+title: "Poverty and Test Performance in New York Public Schools"
+author: "Xumo(Chloe) Zhu"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+  echo = TRUE,
+  warning = FALSE,
+  message = FALSE
+)
+
+library(tidyverse)
+```
+
+# Introduction
+
+This analysis examines the relationship between socioeconomic conditions and student test performance in New York public schools. School-level data are combined with county-level socioeconomic data from the American Community Survey (ACS).
+
+The main questions are:
+
+1.  How does test performance differ across counties with low, medium, and high poverty?
+2.  What is the relationship between free/reduced-price lunch participation and test performance?
+3.  How do counties with the highest poverty rates compare with counties with the lowest poverty rates?
+
+# Data Preparation
+
+Two datasets are used in this analysis: a school-level dataset containing enrollment, lunch participation, and test scores, and an ACS dataset containing county-level socioeconomic information such as poverty rates and median household income.
+
+```{r}
+schools_clean <- read_csv(
+  "data/processed/nys_schools_clean.csv",
+  show_col_types = FALSE
+)
+
+nys_acs <- read_csv(
+  "data/raw/nys_acs.csv",
+  show_col_types = FALSE
+)
+```
+
+During data cleaning, values coded as `-99` were treated as missing values. Invalid free and reduced-price lunch percentages outside the range of 0 to 1 were also treated as missing.
+
+## Poverty Groups
+
+To compare counties at different poverty levels, county poverty rates were divided into three groups using tertiles. The first tertile represents low-poverty observations, the middle tertile represents medium-poverty observations, and the upper tertile represents high-poverty observations.
+
+The approximate cutoffs were 11.66% and 14.39%.
+
+```{r}
+poverty_cutoffs <- quantile(
+  nys_acs$county_per_poverty,
+  probs = c(1/3, 2/3)
+)
+
+poverty_cutoffs
+```
+
+Using tertiles creates approximately equal-sized groups and makes it easier to compare test performance across different poverty levels.
+
+## Standardizing Test Scores
+
+Because test scores are not directly comparable across years, Math and ELA scores were standardized within each year using z-scores.
+
+A z-score of 0 represents the average performance for that year. Positive values indicate performance above the yearly average, while negative values indicate performance below the yearly average.
+
+```{r}
+schools_processed <- read_csv(
+  "data/processed/nys_schools_processed.csv",
+  show_col_types = FALSE
+)
+
+acs_processed <- read_csv(
+  "data/processed/nys_acs_processed.csv",
+  show_col_types = FALSE
+)
+```
+
+# Merging the Data
+
+The school and ACS datasets were merged using `county_name` and `year`. A left join was used so that all school observations were retained while matching county-level socioeconomic information was added when available.
+
+```{r}
+merged_data <- schools_processed |>
+  left_join(
+    acs_processed,
+    by = c("county_name", "year")
+  )
+
+glimpse(merged_data)
+```
+
+The school dataset covers 2008 through 2017, while the ACS data used here cover 2009 through 2016. Therefore, school observations from 2008 and 2017 do not have matching ACS information and are not included in analyses that require county poverty information.
+
+# Summary Tables
+
+## County-Level Summary
+
+The first summary examines enrollment, free/reduced-price lunch participation, and poverty rates for each county and year.
+
+```{r}
+county_summary <- merged_data |>
+  filter(!is.na(county_per_poverty)) |>
+  group_by(county_name, year) |>
+  summarize(
+    total_enrollment = sum(total_enroll, na.rm = TRUE),
+
+    lunch_rate = weighted.mean(
+      per_free_lunch + per_reduced_lunch,
+      w = total_enroll,
+      na.rm = TRUE
+    ),
+
+    poverty_rate = first(county_per_poverty),
+
+    .groups = "drop"
+  )
+
+head(county_summary)
+```
+
+Lunch participation is weighted by school enrollment so that larger schools contribute more to the county-level estimate than smaller schools.
+
+## Counties with the Highest and Lowest Poverty Rates
+
+To compare counties over the full period, average poverty and lunch participation rates were calculated for each county.
+
+```{r}
+county_overall <- county_summary |>
+  group_by(county_name) |>
+  summarize(
+    avg_poverty_rate = mean(poverty_rate, na.rm = TRUE),
+    avg_lunch_rate = mean(lunch_rate, na.rm = TRUE),
+    .groups = "drop"
+  )
+
+county_scores <- merged_data |>
+  filter(!is.na(county_per_poverty)) |>
+  group_by(county_name) |>
+  summarize(
+    avg_math_z = mean(math_z, na.rm = TRUE),
+    avg_ela_z = mean(ela_z, na.rm = TRUE),
+    .groups = "drop"
+  )
+
+county_analysis <- county_overall |>
+  left_join(
+    county_scores,
+    by = "county_name"
+  )
+```
+
+The five counties with the highest average poverty rates were:
+
+```{r}
+top5_poverty <- county_analysis |>
+  slice_max(avg_poverty_rate, n = 5)
+
+top5_poverty
+```
+
+The five counties with the lowest average poverty rates were:
+
+```{r}
+bottom5_poverty <- county_analysis |>
+  slice_min(avg_poverty_rate, n = 5)
+
+bottom5_poverty
+```
+
+Overall, counties with higher poverty rates tended to have higher rates of free/reduced-price lunch participation and lower standardized Math and ELA performance. Counties with lower poverty rates generally showed higher standardized test performance.
+
+# Data Visualizations
+
+## Lunch Assistance and Math Performance
+
+The first visualization examines the relationship between free/reduced-price lunch participation and standardized Math performance at the school level.
+
+```{r, fig.width=10, fig.height=6}
+plot_data <- merged_data |>
+  mutate(
+    lunch_rate = per_free_lunch + per_reduced_lunch,
+    lunch_rate = if_else(
+      lunch_rate <= 1,
+      lunch_rate,
+      NA_real_
+    )
+  )
+
+ggplot(
+  plot_data,
+  aes(x = lunch_rate, y = math_z)
+) +
+  geom_point(alpha = 0.2) +
+  geom_smooth(method = "lm", se = FALSE) +
+  scale_x_continuous(
+    labels = scales::label_percent()
+  ) +
+  labs(
+    title = "Schools with Higher Lunch Assistance Rates Tend to Have Lower Math Performance",
+    x = "Students Qualifying for Free/Reduced-Price Lunch",
+    y = "Standardized Math Score"
+  ) +
+  theme_minimal()
+```
+
+The downward trend suggests a negative relationship between lunch assistance rates and Math performance. Schools with larger shares of students qualifying for free or reduced-price lunch tend to have lower standardized Math scores. This is an association and does not show that lunch assistance or poverty directly causes lower test performance.
+
+## Test Performance Across Poverty Groups
+
+The second visualization compares average Math and ELA performance across low-, medium-, and high-poverty groups.
+
+```{r, fig.width=10, fig.height=6}
+poverty_performance <- merged_data |>
+  filter(!is.na(poverty_group)) |>
+  group_by(poverty_group) |>
+  summarize(
+    avg_math_z = mean(math_z, na.rm = TRUE),
+    avg_ela_z = mean(ela_z, na.rm = TRUE),
+    .groups = "drop"
+  )
+
+poverty_plot_data <- poverty_performance |>
+  pivot_longer(
+    cols = c(avg_math_z, avg_ela_z),
+    names_to = "subject",
+    values_to = "score"
+  ) |>
+  mutate(
+    subject = case_when(
+      subject == "avg_math_z" ~ "Math",
+      subject == "avg_ela_z" ~ "ELA"
+    ),
+    poverty_group = factor(
+      poverty_group,
+      levels = c("Low", "Medium", "High")
+    )
+  )
+
+ggplot(
+  poverty_plot_data,
+  aes(
+    x = poverty_group,
+    y = score,
+    fill = subject
+  )
+) +
+  geom_col(position = "dodge") +
+  labs(
+    title = "Test Performance Declines as County Poverty Increases",
+    x = "County Poverty Group",
+    y = "Average Standardized Test Score",
+    fill = "Subject"
+  ) +
+  theme_minimal()
+```
+
+The differences across poverty groups are clear. Schools associated with low-poverty counties have average Math and ELA scores above the yearly average. The medium-poverty group is close to the yearly average, while schools associated with high-poverty counties have average scores below the yearly average.
+
+This pattern is consistent for both Math and ELA.
+
+# Key Findings
+
+The analysis shows a consistent relationship between socioeconomic conditions and student test performance in the New York public school data.
+
+First, standardized Math and ELA performance decreases across the low-, medium-, and high-poverty groups. Schools in low-poverty counties perform above the yearly average on both subjects, while schools in high-poverty counties perform below the yearly average.
+
+Second, free/reduced-price lunch participation is also negatively associated with Math performance at the school level. Schools with higher lunch assistance rates tend to have lower standardized Math scores.
+
+Finally, the comparison of counties with the highest and lowest average poverty rates shows a similar pattern. Higher-poverty counties generally have higher lunch assistance rates and lower standardized test performance.
+
+These findings show an association between socioeconomic disadvantage and academic performance in this dataset. However, this analysis is descriptive and does not establish that poverty causes lower test scores. Other differences across schools and counties may also contribute to the observed patterns.
