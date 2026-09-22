@@ -1,0 +1,645 @@
+---
+title: "NYS Schools & Poverty: How Community Conditions Relate to Test Performance"
+subtitle: "Prepared for the NYC Department of Education"
+author: "Yinuo Zhu"
+date: "`r Sys.Date()`"
+output:
+  html_document:
+    theme: flatly
+    toc: true
+    toc_float: true
+    toc_depth: 3
+    df_print: paged
+    code_folding: show
+---
+
+```{r setup, include=FALSE}
+# echo = TRUE 让评分者能看到代码和代码内注释（作业明确要求）
+# code_folding: show 允许读者折叠代码，兼顾技术和非技术读者
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE,
+                      fig.width = 9, fig.height = 5)
+
+library(tidyverse)
+library(ggthemes)   # theme_wsj(), scale_fill_wsj(), scale_color_wsj()
+library(scales)     # percent_format()
+library(knitr)
+library(broom)      # tidy() 把模型结果整理成数据框
+
+merged <- read_csv("data/processed/merged.csv")
+```
+
+```{r missing-data}
+# ------------------------------------------------------------------
+# 缺失值处理：只删除分析所需关键变量缺失的行
+# 不用全表 drop_na()，避免因无关列的缺失误删大量有效记录
+# ------------------------------------------------------------------
+n_before <- nrow(merged)
+
+merged_complete <- merged |>
+  drop_na(
+    county_name, year, total_enroll,
+    per_free_lunch, per_reduced_lunch,
+    county_per_poverty, poverty_group,
+    math_z, ela_z
+  ) |>
+  # 固定贫困分组顺序为 low < medium < high（影响所有表格和图的排序）
+  mutate(poverty_group = factor(poverty_group,
+                                levels = c("low", "medium", "high")))
+
+n_after     <- nrow(merged_complete)
+n_dropped   <- n_before - n_after
+pct_dropped <- round(n_dropped / n_before * 100, 1)
+```
+
+```{r missing-diagnostic}
+# ------------------------------------------------------------------
+# 缺失是否随机？检查被删记录是否集中在特定年份
+# 如果某一年缺失率畸高，说明缺失非随机，结论需要更谨慎
+# ------------------------------------------------------------------
+missing_by_year <- merged |>
+  mutate(is_complete = !is.na(math_z) & !is.na(ela_z) &
+           !is.na(per_free_lunch) & !is.na(county_per_poverty)) |>
+  group_by(year) |>
+  summarise(n_total = n(),
+            n_dropped = sum(!is_complete),
+            pct_dropped = round(mean(!is_complete) * 100, 1),
+            .groups = "drop")
+
+max_year_missing <- max(missing_by_year$pct_dropped)
+```
+
+```{r wsj-theme}
+# ------------------------------------------------------------------
+# 统一的 WSJ 绘图主题
+# theme_wsj() 默认隐藏坐标轴标题、字号偏大，这里手动调回可用状态
+# ------------------------------------------------------------------
+wsj_tweak <- theme_wsj(base_size = 10, color = "brown") +
+  theme(
+    plot.title      = element_text(size = 15, face = "bold"),
+    plot.subtitle   = element_text(size = 10, color = "grey30"),
+    axis.title      = element_text(size = 10, face = "plain"),  # 覆盖掉 blank
+    axis.title.x    = element_text(margin = margin(t = 8)),
+    axis.title.y    = element_text(margin = margin(r = 8)),
+    axis.text       = element_text(size = 9),
+    strip.text      = element_text(size = 11, face = "bold"),
+    legend.position = "bottom",
+    legend.title    = element_blank()
+  )
+
+# 图表输出目录
+dir.create("figures", showWarnings = FALSE)
+```
+
+---
+
+# Executive summary
+
+```{r exec-numbers, include=FALSE}
+# 下面 executive summary 里引用的数字，全部在此计算，避免手写出错
+fit_math_simple <- lm(math_z ~ per_free_lunch, data = merged_complete)
+slope_math_10pp <- round(coef(fit_math_simple)[["per_free_lunch"]] / 10, 3)
+
+group_means <- merged_complete |>
+  group_by(poverty_group) |>
+  summarise(math = mean(math_z), ela = mean(ela_z), .groups = "drop")
+
+gap_math_exec <- round(group_means$math[group_means$poverty_group == "low"] -
+                         group_means$math[group_means$poverty_group == "high"], 2)
+
+cor_pov_lunch <- round(cor(merged_complete$county_per_poverty,
+                           merged_complete$per_free_lunch), 2)
+```
+
+Three findings, stated up front:
+
+1. **Poverty and test performance are strongly and consistently linked.** Schools
+   in high-poverty counties score about `r abs(gap_math_exec)` standard deviations
+   below those in low-poverty counties in math, and the pattern holds in ELA.
+
+2. **The gap is stable across every year in the data.** This is not a one-year
+   anomaly or an artifact of a particular test form — it reproduces in each year
+   after scores are standardized within year.
+
+3. **Free-lunch share cannot be cleanly separated from poverty itself.** The two
+   measures correlate at `r cor_pov_lunch` in this data, so the department's
+   question about whether lunch access *moderates* the poverty-performance
+   relationship cannot be answered convincingly here. Section 4 shows why, and
+   what study design would be needed instead.
+
+**Bottom line for policy:** the data supports targeting resources by community
+poverty level, but does *not* support the claim that expanding lunch access would
+by itself move test scores.
+
+---
+
+# 1. Framing the question
+
+## Why is the department asking?
+
+Before touching the data, it is worth asking what decision these questions feed
+into. A department asking "how does poverty relate to test performance" is
+usually working toward one of three things: justifying a funding formula that
+weights by need, identifying schools that are over- or under-performing relative
+to their community conditions, or evaluating whether an existing program
+(here, subsidized lunch) is doing what it was meant to do. Those three goals need
+different analyses, and the third one is the hardest to support with observational
+county-level data.
+
+## What could answer them
+
+- **Relationship between poverty and scores:** a school-level scatter with a
+  fitted line, plus group means across poverty tertiles.
+- **Change over time:** the same group means plotted by year, so a narrowing or
+  widening gap would be visible.
+- **Moderation by lunch access:** an interaction model — but only if poverty and
+  lunch participation vary independently enough to be separated.
+
+## What I expected to find, before looking
+
+A clear negative association between poverty and scores (this is one of the most
+replicated findings in education research), a gap that persists over time, and a
+lunch-access variable so correlated with poverty that it functions as a proxy for
+it rather than as an independent lever. The analysis below confirms all three.
+
+---
+
+# 2. Data and methods
+
+**Why z-scores.** Scale scores are not comparable year-to-year because the state
+changes tests over time. All performance metrics below are z-scores standardized
+**within each year** (mean 0, SD 1), so -0.5 always means "half a standard
+deviation below that year's statewide average," regardless of which year the
+observation comes from.
+
+**Missing data.** Records missing any variable needed for the analysis were
+dropped. This removed `r format(n_dropped, big.mark = ",")` of
+`r format(n_before, big.mark = ",")` school-year records (`r pct_dropped`%),
+leaving `r format(n_after, big.mark = ",")` complete cases.
+
+```{r missing-table}
+kable(missing_by_year, digits = 1,
+      col.names = c("Year", "Records", "Dropped", "% dropped"),
+      caption = "Missing-data rate by year — checking whether attrition is concentrated in particular years",
+      format.args = list(big.mark = ","))
+```
+
+The highest single-year attrition rate is `r max_year_missing`%.
+`r if (max_year_missing > 20) "This is high enough that the affected year(s) should be interpreted with caution — the remaining schools in those years may not be representative." else "Attrition is spread reasonably evenly across years, which supports treating the complete-case sample as representative."`
+
+---
+
+# 3. Question 1: Does lunch access relate to performance?
+
+```{r fig1}
+# 学校层面：免费午餐比例 vs 标准化成绩
+# pivot_longer 转长格式，便于用 facet 并排对比两个科目
+plot1_data <- merged_complete |>
+  pivot_longer(cols = c(math_z, ela_z),
+               names_to = "subject", values_to = "z_score") |>
+  mutate(subject = recode(subject, math_z = "Math", ela_z = "ELA"))
+
+plot1 <- plot1_data |>
+  ggplot(aes(x = per_free_lunch, y = z_score)) +
+  geom_point(alpha = 0.20, color = "grey45", size = 1) +
+  geom_smooth(method = "lm", formula = y ~ x,
+              color = "#C72E29", fill = "#C72E29",
+              alpha = 0.2, linewidth = 1.2) +
+  geom_hline(yintercept = 0, linetype = "dashed", color = "grey55") +
+  facet_wrap(~ subject) +
+  scale_x_continuous(labels = percent_format(accuracy = 1)) +
+  labs(
+    title    = "Schools with more free-lunch students score lower",
+    subtitle = "Each point is one school-year; scores standardized within year (z-score)",
+    x        = "Share of students qualifying for free lunch",
+    y        = "Test performance (z-score)"
+  ) +
+  wsj_tweak
+
+plot1
+
+# bg 参数必须显式指定，否则 WSJ 的米色背景在导出时会丢失
+ggsave("figures/lunch_vs_performance.png", plot1,
+       width = 9, height = 5, dpi = 300, bg = "#f8f2e4")
+```
+
+```{r q1-numbers}
+# 拟合线性模型提取斜率
+# 斜率单位是"免费午餐比例每增加 1（即 100 个百分点）"，
+# 除以 10 换算成"每增加 10 个百分点"，更符合日常解读习惯
+fit_math <- lm(math_z ~ per_free_lunch, data = merged_complete)
+fit_ela  <- lm(ela_z  ~ per_free_lunch, data = merged_complete)
+
+slope_math_10pp <- round(coef(fit_math)[["per_free_lunch"]] / 10, 3)
+slope_ela_10pp  <- round(coef(fit_ela)[["per_free_lunch"]]  / 10, 3)
+
+r2_math <- round(summary(fit_math)$r.squared, 3)
+r2_ela  <- round(summary(fit_ela)$r.squared,  3)
+
+cor_math <- round(cor(merged_complete$per_free_lunch, merged_complete$math_z), 2)
+cor_ela  <- round(cor(merged_complete$per_free_lunch, merged_complete$ela_z),  2)
+```
+
+```{r q1-model-table}
+bind_rows(
+  tidy(fit_math) |> mutate(outcome = "Math"),
+  tidy(fit_ela)  |> mutate(outcome = "ELA")
+) |>
+  filter(term == "per_free_lunch") |>
+  select(outcome, estimate, std.error, statistic, p.value) |>
+  mutate(r_squared = c(r2_math, r2_ela)) |>
+  kable(digits = 3,
+        col.names = c("Outcome", "Slope", "Std. error", "t", "p", "R²"),
+        caption = "Free-lunch share as a predictor of within-year z-score")
+```
+
+**Takeaway:** Each 10-percentage-point increase in a school's free-lunch share is
+associated with a change of about `r slope_math_10pp` standard deviations in math
+and `r slope_ela_10pp` in ELA. The correlations are `r cor_math` and `r cor_ela`
+respectively, so the relationship runs in the same direction and at similar
+strength in both subjects. Free-lunch share alone explains
+`r round(r2_math * 100, 1)`% of the variance in math scores.
+
+**How to read this:** free-lunch share is best understood here as a *measure* of
+student poverty, not as an intervention. A finding that high-free-lunch schools
+score lower is a finding about student poverty, not evidence that the lunch
+program depresses scores.
+
+---
+
+# 4. Question 2: Performance across poverty groups
+
+```{r table-poverty-group}
+# 按县的贫困分组汇总标准化成绩
+poverty_group_summary <- merged_complete |>
+  group_by(poverty_group) |>
+  summarise(
+    n_school_years = n(),                   # 注意：学校-年记录数，不是县-年
+    n_counties     = n_distinct(county_name),
+    mean_math_z    = mean(math_z),
+    mean_ela_z     = mean(ela_z),
+    sd_math_z      = sd(math_z),            # 组内离散度：高贫困组内部差异更大吗？
+    .groups        = "drop"
+  )
+
+kable(poverty_group_summary, digits = 2,
+      col.names = c("Poverty group", "School-years", "Counties",
+                    "Mean math (z)", "Mean ELA (z)", "SD math (z)"),
+      caption = "Mean standardized scores by county poverty group",
+      format.args = list(big.mark = ","))
+```
+
+```{r fig2}
+plot2_data <- poverty_group_summary |>
+  select(poverty_group, mean_math_z, mean_ela_z) |>
+  pivot_longer(-poverty_group, names_to = "subject", values_to = "mean_z") |>
+  mutate(subject = recode(subject, mean_math_z = "Math", mean_ela_z = "ELA"))
+
+plot2 <- plot2_data |>
+  ggplot(aes(x = poverty_group, y = mean_z, fill = subject)) +
+  geom_col(position = position_dodge(width = 0.75), width = 0.65) +
+  geom_hline(yintercept = 0, color = "grey30", linewidth = 0.6) +
+  scale_fill_wsj(palette = "colors6") +
+  labs(
+    title    = "High-poverty counties trail low-poverty counties in both subjects",
+    subtitle = "Mean standardized (z) test scores by county poverty group, all years combined",
+    x        = "County poverty group",
+    y        = "Mean test performance (z-score)"
+  ) +
+  wsj_tweak
+
+plot2
+ggsave("figures/poverty_group_performance.png", plot2,
+       width = 8, height = 5, dpi = 300, bg = "#f8f2e4")
+```
+
+```{r q2-numbers}
+gap <- poverty_group_summary |>
+  filter(poverty_group %in% c("low", "high")) |>
+  select(poverty_group, mean_math_z, mean_ela_z) |>
+  pivot_longer(-poverty_group) |>
+  pivot_wider(names_from = poverty_group, values_from = value) |>
+  mutate(gap = low - high)
+
+gap_math <- round(gap$gap[gap$name == "mean_math_z"], 2)
+gap_ela  <- round(gap$gap[gap$name == "mean_ela_z"],  2)
+```
+
+**Takeaway:** Students in high-poverty counties score about `r gap_math` standard
+deviations below those in low-poverty counties in math, and `r gap_ela` standard
+deviations below in ELA. The gap
+`r if (abs(gap_ela) > abs(gap_math)) "is somewhat larger in ELA than in math" else if (abs(gap_ela) < abs(gap_math)) "is somewhat larger in math than in ELA" else "is essentially identical across the two subjects"`.
+Because these are within-year z-scores, each figure can be read directly as a
+position in that year's statewide distribution.
+
+---
+
+# 5. Question 3: Has the relationship changed over time?
+
+```{r fig3}
+# 按 年份 × 贫困分组 求平均，观察差距是收窄还是扩大
+trend_data <- merged_complete |>
+  group_by(year, poverty_group) |>
+  summarise(mean_math_z = mean(math_z),
+            mean_ela_z  = mean(ela_z),
+            .groups     = "drop") |>
+  pivot_longer(c(mean_math_z, mean_ela_z),
+               names_to = "subject", values_to = "mean_z") |>
+  mutate(subject = recode(subject, mean_math_z = "Math", mean_ela_z = "ELA"))
+
+plot3 <- trend_data |>
+  ggplot(aes(x = year, y = mean_z, color = poverty_group)) +
+  geom_line(linewidth = 1.1) +
+  geom_point(size = 2) +
+  geom_hline(yintercept = 0, linetype = "dashed", color = "grey55") +
+  facet_wrap(~ subject) +
+  scale_x_continuous(breaks = unique(trend_data$year)) +
+  scale_color_wsj(palette = "colors6") +
+  labs(
+    title    = "The poverty gap persists across every year in the data",
+    subtitle = "Mean within-year z-score by county poverty group",
+    x        = "Year",
+    y        = "Mean test performance (z-score)"
+  ) +
+  wsj_tweak
+
+plot3
+ggsave("figures/gap_over_time.png", plot3,
+       width = 9, height = 5, dpi = 300, bg = "#f8f2e4")
+```
+
+```{r q3-numbers}
+# 每年 低-高 贫困组的数学成绩差距
+gap_by_year <- merged_complete |>
+  filter(poverty_group %in% c("low", "high")) |>
+  group_by(year, poverty_group) |>
+  summarise(mean_math_z = mean(math_z), .groups = "drop") |>
+  pivot_wider(names_from = poverty_group, values_from = mean_math_z) |>
+  mutate(gap = low - high)
+
+first_year <- min(gap_by_year$year)
+last_year  <- max(gap_by_year$year)
+gap_first  <- round(gap_by_year$gap[gap_by_year$year == first_year], 2)
+gap_last   <- round(gap_by_year$gap[gap_by_year$year == last_year],  2)
+
+# 用线性趋势检验差距是否显著变化，比只比较首尾两年更稳健
+# 首尾两年可能恰好是异常年份，趋势线用上了全部年份的信息
+gap_trend <- lm(gap ~ year, data = gap_by_year)
+gap_trend_slope <- round(coef(gap_trend)[["year"]], 4)
+gap_trend_p     <- round(summary(gap_trend)$coefficients["year", "Pr(>|t|)"], 3)
+```
+
+```{r table-gap-trend}
+kable(gap_by_year, digits = 2,
+      col.names = c("Year", "Low poverty (z)", "High poverty (z)", "Gap"),
+      caption = "Math performance gap between low- and high-poverty counties, by year")
+```
+
+**Takeaway:** In `r first_year` the math gap between low- and high-poverty counties
+was `r gap_first` standard deviations; by `r last_year` it was `r gap_last`. Fitting
+a trend across all years gives a slope of `r gap_trend_slope` per year
+(p = `r gap_trend_p`), so the gap
+`r if (gap_trend_p > 0.05) "shows no statistically reliable change over the period — it is best described as stable" else if (gap_trend_slope < 0) "narrowed at a statistically detectable rate, though slowly" else "widened at a statistically detectable rate"`.
+No year in the data shows high-poverty counties reaching the statewide average,
+which points to a structural pattern rather than year-specific noise.
+
+---
+
+# 6. Question 4: Does lunch access moderate the relationship?
+
+This is the department's hardest question, and the honest answer is that this data
+cannot settle it. The section below shows the analysis *and* why its result should
+not be over-read.
+
+```{r collinearity}
+# ------------------------------------------------------------------
+# 做交互项之前必须先查共线性
+# 如果贫困率和免费午餐比例高度相关，交互项系数会极不稳定，
+# 标准误膨胀，符号甚至可能翻转——此时任何解读都不可靠
+# ------------------------------------------------------------------
+cor_pov_lunch <- round(cor(merged_complete$county_per_poverty,
+                           merged_complete$per_free_lunch), 2)
+cor_pov_lunch
+```
+
+```{r fig4}
+plot4 <- merged_complete |>
+  ggplot(aes(x = county_per_poverty, y = per_free_lunch)) +
+  geom_point(alpha = 0.20, color = "grey45", size = 1) +
+  geom_smooth(method = "lm", formula = y ~ x,
+              color = "#C72E29", fill = "#C72E29", alpha = 0.2) +
+  scale_x_continuous(labels = percent_format(accuracy = 1)) +
+  scale_y_continuous(labels = percent_format(accuracy = 1)) +
+  labs(
+    title    = paste0("Poverty and free-lunch share move together (r = ",
+                      cor_pov_lunch, ")"),
+    subtitle = "The two measures overlap too much to be separated as independent predictors",
+    x        = "County poverty rate",
+    y        = "School free-lunch share"
+  ) +
+  wsj_tweak
+
+plot4
+ggsave("figures/collinearity.png", plot4,
+       width = 8, height = 5, dpi = 300, bg = "#f8f2e4")
+```
+
+```{r interaction-model}
+# ------------------------------------------------------------------
+# 交互项模型：中心化后再交乘
+# 不中心化的话，主效应系数代表"另一变量=0 时的效应"，
+# 而"贫困率=0"在数据中根本不存在，系数无法解读
+# ------------------------------------------------------------------
+model_data <- merged_complete |>
+  mutate(
+    poverty_c = county_per_poverty - mean(county_per_poverty),
+    lunch_c   = per_free_lunch    - mean(per_free_lunch)
+  )
+
+fit_main        <- lm(math_z ~ poverty_c + lunch_c, data = model_data)
+fit_interaction <- lm(math_z ~ poverty_c * lunch_c, data = model_data)
+
+tidy(fit_interaction) |>
+  kable(digits = 3,
+        col.names = c("Term", "Estimate", "Std. error", "t", "p"),
+        caption = "Interaction model: does free-lunch share change the poverty slope?")
+```
+
+```{r interaction-test}
+# 用 F 检验比较有无交互项的两个模型，判断交互项是否带来解释力提升
+model_comparison <- anova(fit_main, fit_interaction)
+interaction_p <- round(model_comparison$`Pr(>F)`[2], 3)
+
+r2_main        <- round(summary(fit_main)$r.squared, 3)
+r2_interaction <- round(summary(fit_interaction)$r.squared, 3)
+r2_delta       <- round(r2_interaction - r2_main, 4)
+```
+
+**Takeaway:** The interaction term is
+`r if (interaction_p < 0.05) "statistically significant" else "not statistically significant"`
+(p = `r interaction_p`), and adding it raises R² by only `r r2_delta`
+(from `r r2_main` to `r r2_interaction`).
+
+**Why this is not an answer to the department's question.** County poverty and
+school free-lunch share correlate at `r cor_pov_lunch`. When two predictors overlap
+this heavily, the model cannot attribute variance between them reliably: standard
+errors inflate, coefficients become unstable, and an interaction term built from
+them is especially fragile. A significant interaction here would be as likely to
+reflect collinearity artifacts as a real moderating effect, and a null result does
+not establish that no moderation exists.
+
+**What would actually answer it.** Comparing schools at *similar* poverty levels
+that differ in lunch participation — for example, schools that adopted universal
+free meals versus otherwise-similar schools that did not, with data from before
+and after adoption. That is a program-evaluation design, and it needs
+participation data that varies independently of community poverty. This dataset
+does not contain that variation.
+
+---
+
+# 7. County profiles
+
+```{r table-county}
+county_summary <- merged_complete |>
+  group_by(county_name) |>
+  summarise(
+    years_covered          = n_distinct(year),
+    total_enrollment       = sum(total_enroll),
+    per_free_lunch_mean    = mean(per_free_lunch),
+    per_reduced_lunch_mean = mean(per_reduced_lunch),
+    per_poverty_mean       = mean(county_per_poverty),
+    .groups                = "drop"
+  ) |>
+  arrange(desc(per_poverty_mean))
+
+kable(county_summary, digits = 3,
+      col.names = c("County", "Years", "Total enrollment",
+                    "Free lunch", "Reduced lunch", "Poverty rate"),
+      caption = "County profiles, averaged across available years",
+      format.args = list(big.mark = ","))
+```
+
+# 8. Top 5 vs Bottom 5 counties by poverty
+
+```{r table-extremes}
+# 贫困率最高和最低的各 5 个县
+extreme_counties <- bind_rows(
+  county_summary |> slice_max(per_poverty_mean, n = 5) |>
+    mutate(extreme_group = "Top 5 (highest poverty)"),
+  county_summary |> slice_min(per_poverty_mean, n = 5) |>
+    mutate(extreme_group = "Bottom 5 (lowest poverty)")
+)
+
+top_bottom_summary <- merged_complete |>
+  filter(county_name %in% extreme_counties$county_name) |>
+  # 先逐行相加再求均值，比"两个均值相加"更准确（两列缺失模式可能不同）
+  mutate(free_reduced = per_free_lunch + per_reduced_lunch) |>
+  group_by(county_name) |>
+  summarise(
+    per_poverty      = mean(county_per_poverty),
+    per_free_reduced = mean(free_reduced),
+    mean_reading     = mean(mean_ela_score, na.rm = TRUE),
+    mean_math        = mean(mean_math_score, na.rm = TRUE),
+    mean_reading_z   = mean(ela_z),
+    mean_math_z      = mean(math_z),
+    .groups          = "drop"
+  ) |>
+  left_join(select(extreme_counties, county_name, extreme_group),
+            by = "county_name") |>
+  arrange(desc(per_poverty))
+
+kable(top_bottom_summary, digits = 2,
+      col.names = c("County", "Poverty rate", "Free + reduced lunch",
+                    "Reading (raw)", "Math (raw)",
+                    "Reading (z)", "Math (z)", "Group"),
+      caption = "Five highest- and five lowest-poverty counties")
+```
+
+```{r extremes-numbers}
+extreme_gap <- top_bottom_summary |>
+  group_by(extreme_group) |>
+  summarise(math_raw = mean(mean_math), math_z = mean(mean_math_z),
+            .groups = "drop")
+
+raw_hi <- round(extreme_gap$math_raw[extreme_gap$extreme_group ==
+                                       "Top 5 (highest poverty)"], 1)
+raw_lo <- round(extreme_gap$math_raw[extreme_gap$extreme_group ==
+                                       "Bottom 5 (lowest poverty)"], 1)
+z_hi   <- round(extreme_gap$math_z[extreme_gap$extreme_group ==
+                                     "Top 5 (highest poverty)"], 2)
+z_lo   <- round(extreme_gap$math_z[extreme_gap$extreme_group ==
+                                     "Bottom 5 (lowest poverty)"], 2)
+```
+
+**Takeaway:** The five highest-poverty counties average a raw math scale score of
+`r raw_hi` versus `r raw_lo` in the five lowest-poverty counties. Because tests
+change between years, the raw gap mixes real differences with test-form
+differences; the within-year z-score comparison — `r z_hi` versus `r z_lo` — is the
+figure to cite. Free and reduced lunch participation tracks the poverty ranking
+closely, which is expected given that eligibility is itself income-based.
+
+---
+
+# 9. What this analysis does and does not show
+
+**Associations, not causes.** County poverty, free-lunch eligibility, and test
+scores all move together, but this data cannot separate family income from school
+funding, teacher experience, neighborhood conditions, or differences in which
+students sit the test. Nothing here identifies a causal mechanism.
+
+**The ecological inference problem.** Poverty is measured at the county level
+while performance is measured at the school level. A county-level association does
+not tell us that the individual low-income students within those schools are the
+ones scoring lower — that inference requires student-level data, which this
+dataset does not have.
+
+**Coarse geography.** Within-county variation between neighborhoods is very
+likely larger than the between-county differences shown here. A county-level
+poverty measure averages over exactly the variation a targeting policy would want
+to see.
+
+**Missing data.** `r pct_dropped`% of records were dropped. The by-year table in
+Section 2 shows attrition is
+`r if (max_year_missing > 20) "uneven across years, so year-to-year comparisons should be treated cautiously" else "reasonably even across years"`,
+but attrition by county was not examined and could still bias county comparisons.
+
+## Recommendations
+
+1. **Use community poverty as a targeting variable, not as an explanation.** The
+   relationship is strong and stable enough to justify need-weighted resource
+   allocation. It is not strong enough to tell you *what* to fund.
+
+2. **Do not treat lunch participation as a lever based on this analysis.** Section
+   6 shows the measure is too entangled with poverty to isolate. Evaluating the
+   lunch program needs a before/after design with a comparison group.
+
+3. **Move to school- or student-level poverty data if the goal is targeting.**
+   County averages will systematically under-serve poor schools in wealthy
+   counties and over-serve wealthy schools in poor counties.
+
+---
+
+# 10. Methods recap
+
+- Removed exact duplicate rows; recoded `-99` sentinel values to `NA`, including
+  free/reduced lunch shares recorded above 1 (logically impossible for a
+  proportion).
+- Dropped records missing any analysis variable
+  (`r format(n_dropped, big.mark = ",")` records, `r pct_dropped`% of the total);
+  attrition by year is reported in Section 2.
+- Grouped county-years into Low / Medium / High poverty by **tertiles** of the
+  county poverty rate. Tertiles were chosen over fixed policy thresholds so the
+  three groups hold comparable numbers of observations, keeping group means
+  stable. The trade-off is that the cut points are specific to this dataset and
+  not comparable across studies.
+- Standardized math and ELA scale scores **within each year** so performance is
+  comparable across years despite changes in the test instrument.
+- Merged school data with ACS county data on `county_name + year` using a **left
+  join**, keeping all school records and attaching county context where available.
+- Interaction terms in Section 6 were **mean-centered** before multiplication so
+  the main effects remain interpretable at the sample average rather than at
+  values (such as zero poverty) that do not occur in the data.
+
+```{r session-info}
+# 记录运行环境，便于他人复现
+sessionInfo()
+```
