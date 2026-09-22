@@ -1,0 +1,138 @@
+---
+title: "Poverty and Test Performance in New York Public Schools"
+author: "Yash"
+date: "`r format(Sys.Date(), '%B %d, %Y')`"
+output:
+  html_document:
+    toc: true
+    toc_float: true
+    code_folding: hide
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(message = FALSE, warning = FALSE, fig.width = 8, fig.height = 5)
+library(tidyverse)
+```
+
+## Overview
+
+**Question:** What can data tell us about the relationship between poverty and test performance in New York public schools?
+
+The department also asked:
+
+1. What is the difference in test performance between low, medium, and high poverty areas?
+2. Has this relationship changed over time?
+
+**Data:** School-level math and ELA scores (2009-2016) merged with county-level American Community Survey estimates (poverty rate, median household income, share with a bachelor's degree).
+
+## 1. Data preparation
+
+```{r import}
+df <- read_csv("data/processed/nys_acs_school_final.csv")
+glimpse(df)
+```
+
+Test scales change from time to time, so raw scores are not comparable across years. Math and ELA scores are standardized within each year (z-scores), so 0 means an average school that year. Counties are also grouped into Low/Medium/High poverty terciles.
+
+```{r prep}
+#Reshape: one row per school-year-subject
+df_long <- df |>
+  mutate(poverty_grp = factor(poverty_grp, levels = c("Low", "Medium", "High"))) |>
+  pivot_longer(c(math_z, ela_z), names_to = "subject", values_to = "z") |>
+  mutate(subject = recode(subject, math_z = "Math", ela_z = "ELA")) |>
+  drop_na(z)
+
+#Slopes: change in z-score per +10 percentage points of county poverty
+slope_by <- function(data, ...) {
+  data |>
+    group_by(...) |>
+    summarise(slope = coef(lm(z ~ county_per_poverty))[2] * 0.1, .groups = "drop") |>
+    mutate(label = sprintf("%+.2f", slope))
+}
+
+slopes_overall <- slope_by(df_long, subject)
+slopes_year    <- slope_by(df_long, year, subject)
+
+dir.create("plots", showWarnings = FALSE)
+```
+
+## 2. Overall relationship
+
+```{r tbl-overall}
+slopes_overall |>
+  select(Subject = subject, `Slope per +10 pts poverty` = slope) |>
+  knitr::kable(digits = 3)
+```
+
+```{r plot1}
+p1 <- ggplot(df_long, aes(county_per_poverty, z)) +
+  geom_point(alpha = 0.05) +
+  geom_smooth(method = "lm", formula = y ~ x) +
+  geom_text(data = slopes_overall,
+            aes(x = Inf, y = Inf, label = paste("Slope:", label)),
+            hjust = 1.1, vjust = 1.5, inherit.aes = FALSE) +
+  facet_wrap(~subject) +
+  labs(x = "County poverty rate", y = "Z-score",
+       caption = "Slope = change in z-score per +10 pts of poverty")
+p1
+ggsave("plots/1_poverty_vs_z.png", p1, width = 9, height = 5, dpi = 300)
+```
+
+**Takeaway:** Poverty and test performance are negatively related in both subjects: for every 10-point rise in a county's poverty rate, ELA z-scores drop by about 0.53 and math z-scores drop by about 0.47. Both effects are similar in size, with ELA slightly more sensitive to poverty than math.
+
+## 3. Low, medium, and high poverty areas
+
+```{r tbl-group}
+df_long |>
+  group_by(`Poverty group` = poverty_grp, Subject = subject) |>
+  summarise(`Mean z-score` = mean(z), Schools = n(), .groups = "drop") |>
+  knitr::kable(digits = 2)
+```
+
+```{r plot2}
+p2 <- ggplot(df_long, aes(poverty_grp, z, fill = subject)) +
+  geom_boxplot(outlier.alpha = 0.1) +
+  labs(x = "Poverty group", y = "Z-score", fill = NULL)
+p2
+ggsave("plots/2_poverty_group_vs_z.png", p2, width = 7, height = 5, dpi = 300)
+```
+
+**Takeaway:** Schools in high-poverty counties score noticeably lower than those in low-poverty counties in both subjects, with the medium-poverty group falling in between. The gap between low and high poverty groups is roughly similar for ELA and math, and it's a step-wise decline rather than a jump concentrated in one group.
+
+## 4. Has the relationship changed over time?
+
+```{r plot3, fig.width=12, fig.height=6}
+p3 <- ggplot(df_long, aes(county_per_poverty, z, color = subject)) +
+  geom_point(alpha = 0.05, size = 0.4) +
+  geom_smooth(method = "lm", formula = y ~ x, se = FALSE) +
+  geom_text(data = slopes_year,
+            aes(x = Inf, y = Inf, label = paste0(subject, ": ", label),
+                vjust = if_else(subject == "Math", 1.5, 3)),
+            hjust = 1.1, size = 3, show.legend = FALSE) +
+  facet_wrap(~year, nrow = 2) +
+  labs(x = "County poverty rate", y = "Z-score", color = NULL,
+       caption = "Slope = change in z-score per +10 pts of poverty") +
+  theme_minimal() +
+  theme(legend.position = "top")
+p3
+ggsave("plots/3_poverty_vs_z_by_year.png", p3, width = 14, height = 7, dpi = 300)
+```
+
+```{r plot4}
+p4 <- ggplot(slopes_year, aes(year, slope, color = subject)) +
+  geom_line() +
+  geom_point() +
+  geom_text(aes(label = label), vjust = -0.9, size = 3, show.legend = FALSE) +
+  labs(x = "Year", y = "Slope (z-score per +10 pts poverty)", color = NULL) +
+  theme_minimal()
+p4
+ggsave("plots/4_slope_over_time.png", p4, width = 7, height = 5, dpi = 300)
+```
+
+**Takeaway:** The relationship has weakened over time for both subjects. The ELA slope fell from about -0.76 in 2009 to about -0.32 in 2016, and math fell from about -0.57 to -0.41 over the same period. ELA started out more sensitive to poverty than math but converged with it by 2016, so poverty explains less of the score gap in recent years than it used to, though the relationship is still clearly negative.
+
+## 5. Caveats
+
+- Poverty is measured at the **county** level, so every school in a county shares the same poverty value in a given year. The relationship describes county context, not each school's own student population.
+- Z-scores are standardized within each year, so they show relative standing, not absolute gains or losses in performance.
+- This is an association, not a causal claim: it does not show that poverty causes lower scores.
