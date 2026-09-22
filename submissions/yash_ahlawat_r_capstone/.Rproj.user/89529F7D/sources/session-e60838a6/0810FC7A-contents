@@ -1,0 +1,62 @@
+# Poverty and Test Performance in New York Public Schools
+
+Analysis for the NYC Department of Education question: *What can data tell us
+about the relationship between poverty and test performance in New York
+public schools?*
+
+## Contents
+
+```
+.
+├── analysis.Rmd              # Main notebook: data prep, tables, plots, takeaways
+├── analysis.html             # Knitted output (open this to view results)
+├── data/
+│   └── processed/
+│       └── nys_acs_school_final.csv   # School-level test scores merged with
+│                                       # county-level ACS poverty/income/education data
+├── plots/
+│   └── figures/               # PNGs saved from the notebook
+│       ├── 1_poverty_vs_z.png
+│       ├── 2_poverty_group_vs_z.png
+│       ├── 3_poverty_vs_z_by_year.png
+│       └── 4_slope_over_time.png
+└── README.md                  # This file
+```
+
+## Data
+
+`nys_acs_school_final.csv` has one row per school per year (2009-2016) and combines:
+
+- School-level mean math and ELA test scores, enrollment, and free/reduced-price lunch shares (NYSED)
+- County-level poverty rate, median household income, and share with a bachelor's degree (ACS)
+
+Key columns:
+
+| Column | Meaning |
+|---|---|
+| `county_name` | County the school is in |
+| `year` | School year |
+| `county_per_poverty` | County poverty rate (proportion) |
+| `median_household_income` | County median household income ($) |
+| `county_per_bach` | County share with a bachelor's degree (proportion) |
+| `poverty_grp` | County poverty rate grouped into Low/Medium/High terciles |
+| `mean_math_score`, `mean_ela_score` | Raw school mean test scores |
+| `math_z`, `ela_z` | Test scores standardized within year (z-scores), since test scales change year to year |
+| `per_free_lunch`, `per_reduced_lunch` | Share of students on free/reduced-price lunch |
+
+## Reproducing the analysis
+
+1. Open this folder as an RStudio project.
+2. Open `analysis.Rmd`.
+3. Click **Knit** (or run `rmarkdown::render("analysis.Rmd")`), which regenerates `analysis.html` and the PNGs in `plots/figures/`.
+
+Requires the `tidyverse` and `knitr` packages.
+
+## Findings
+
+See `analysis.html` for the full write-up, including tables, plots, and a
+short takeaway for each of the department's three questions:
+
+1. Overall relationship between poverty and test performance
+2. Difference in performance between low, medium, and high poverty areas
+3. Whether the relationship has changed from 2009 to 2016
