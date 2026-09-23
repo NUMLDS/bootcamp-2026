@@ -1,0 +1,89 @@
+---
+title: "Report"
+output: html_document
+---
+
+---
+title: "New York Schools and County Socioeconomic Conditions"
+author: "Yifei Bu"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+library(tidyverse)
+knitr::opts_chunk$set(
+  echo = TRUE,
+  warning = FALSE,
+  message = FALSE
+)
+```
+
+# Introduction
+
+This analysis explores how socioeconomic conditions are related to
+academic performance in New York State schools. I focus on county
+poverty, student participation in free or reduced-price lunch programs,
+and standardized Math and ELA performance.
+# Data and Cleaning
+
+The analysis uses school-level data from the New York State Department
+of Education and county-level data from the American Community Survey.
+
+Missing values originally coded as -99 were converted to NA. Invalid
+percentage values were also treated as missing. Because New York State
+test scales changed over time, Math and ELA scores were standardized
+within each year using z-scores.
+
+# Poverty Groups
+
+Counties were divided into three approximately equal-sized groups within
+each year based on their poverty rate. Counties in the lowest third were
+classified as low poverty, those in the middle third as medium poverty,
+and those in the highest third as high poverty.
+
+```{r load-results}
+county_year_summary <- read_csv(
+  "data/processed/county_year_summary.csv",
+  show_col_types = FALSE
+)
+
+poverty_extremes <- read_csv(
+  "data/processed/poverty_extremes.csv",
+  show_col_types = FALSE
+)
+
+poverty_group_summary <- read_csv(
+  "data/processed/poverty_group_summary.csv",
+  show_col_types = FALSE
+)
+```
+# Summary Tables
+
+## Counties with the Highest and Lowest Poverty Rates
+```{r poverty-table}
+knitr::kable(
+  poverty_extremes,
+  digits = 2,
+  caption = "Counties with the Highest and Lowest Average Poverty Rates"
+)
+```
+
+```{r create-plots, include=FALSE}
+source("scripts/4_plot.R")
+```
+# Lunch Assistance and Academic Performance
+```{r plot1, echo=FALSE, fig.width=10, fig.height=5}
+p1
+```
+
+
+# Key Findings
+
+The analysis shows clear socioeconomic differences in school outcomes.
+Schools serving larger shares of students receiving free or reduced-price
+lunch tend to have lower standardized test performance. Academic
+performance also differs across county poverty groups.
+
+These results describe associations in the data and should not be
+interpreted as evidence that poverty or lunch-program participation
+directly causes differences in test scores.
