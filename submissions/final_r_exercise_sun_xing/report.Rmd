@@ -1,0 +1,121 @@
+---
+title: "Final R Exercise"
+author: "Xing Sun"
+output: html_document
+---
+```{r setup, include=FALSE}
+library(tidyverse)
+
+merged_data <- read_csv(
+  "data/processed/merged_data.csv",
+  show_col_types = FALSE
+)
+
+merged_data <- merged_data |>
+  mutate(
+    poverty_group = factor(
+      poverty_group,
+      levels = c("Low", "Medium", "High")
+    ),
+    frpl_rate = per_free_lunch + per_reduced_lunch,
+    frpl_rate = if_else(
+      between(frpl_rate, 0, 1),
+      frpl_rate,
+      NA_real_
+    )
+  )
+```
+
+# Introduction
+
+This project examines the relationship between poverty and test performance in New York public schools.
+
+The analysis combines school-level data from the New York State Department of Education with county-level socioeconomic data from the American Community Survey.
+
+# Data Preparation
+
+The data were cleaned by treating coded missing values as `NA`, checking invalid proportion values, and merging school data with county-level ACS data by county and year.
+
+Because test score scales differ across years, math and ELA scores were standardized within each year using z-scores.
+
+# Results
+
+## Test Performance by Poverty Group
+To compare test performance across different poverty levels, counties were divided into low, medium, and high poverty groups. The table below shows the average standardized math and ELA scores for schools in each group.
+```{r poverty-summary}
+poverty_summary <- merged_data |>
+  filter(!is.na(poverty_group)) |>
+  group_by(poverty_group) |>
+  summarise(
+    Schools = n(),
+    `Mean Math Z-Score` = mean(math_z, na.rm = TRUE),
+    `Mean ELA Z-Score` = mean(ela_z, na.rm = TRUE)
+  )
+
+knitr::kable(
+  poverty_summary,
+  digits = 3,
+  caption = "Test Performance by County Poverty Group"
+)
+```
+
+```{r poverty-boxplot, fig.width=8, fig.height=5}
+ggplot(
+  merged_data |>
+    filter(
+      !is.na(poverty_group),
+      !is.na(math_z)
+    ),
+  aes(x = poverty_group, y = math_z)
+) +
+  geom_boxplot() +
+  labs(
+    title = "Math Performance Tends to Be Lower in Higher-Poverty Counties",
+    x = "County Poverty Group",
+    y = "Standardized Math Score (z-score)"
+  ) +
+  theme_minimal()
+```
+
+## Free/Reduced-Price Lunch and Test Performance
+Free and reduced-price lunch participation provides another measure of student economic disadvantage at the school level. The figure below shows the relationship between the combined free/reduced-price lunch rate and standardized math performance.
+
+```{r lunch-math-plot, fig.width=8, fig.height=5}
+ggplot(
+  merged_data |>
+    filter(
+      !is.na(frpl_rate),
+      !is.na(math_z)
+    ),
+  aes(x = frpl_rate, y = math_z)
+) +
+  geom_point(alpha = 0.2) +
+  geom_smooth(
+    method = "lm",
+    se = FALSE
+  ) +
+  labs(
+    title = "Math Performance Tends to Decline as Lunch Assistance Increases",
+    x = "Free/Reduced-Price Lunch Rate",
+    y = "Standardized Math Score (z-score)"
+  ) +
+  theme_minimal()
+```
+
+Schools with higher rates of free or reduced-price lunch participation tended to have lower standardized math scores. This pattern is consistent with the poverty-group comparison above, although the analysis is descriptive and does not establish a causal relationship.
+
+# Key Takeaways
+The analysis shows a clear relationship between economic disadvantage and test performance in New York public schools.
+
+Schools located in lower-poverty counties generally had higher standardized math and ELA scores, while schools in higher-poverty counties tended to perform below the yearly average.
+
+A similar pattern appeared at the school level: schools with higher rates of free or reduced-price lunch participation tended to have lower standardized math scores.
+
+Overall, the results suggest that poverty and student economic disadvantage are strongly associated with differences in academic performance.
+
+# Limitations
+This analysis is descriptive and does not establish that poverty directly causes lower test scores. Other factors, such as school funding, student demographics, local resources, and differences across districts, may also contribute to the observed relationship.
+
+The ACS county-level data were not available for every year in the school dataset, so some school-year observations could not be matched with poverty data. A small number of records also contained missing or invalid values and were excluded from parts of the analysis.
+
+In addition, poverty is measured at the county level, while test performance is measured at the school level. County-level poverty may not perfectly represent the economic conditions of students attending a particular school.
