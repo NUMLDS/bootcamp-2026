@@ -1,0 +1,26 @@
+{
+    "id": "B09BE93D",
+    "path": "~/Desktop/Capstoneproject/run_all.R",
+    "project_path": "run_all.R",
+    "type": "r_source",
+    "hash": "2014435971",
+    "contents": "",
+    "dirty": false,
+    "created": 1790015442462.0,
+    "source_on_save": false,
+    "relative_order": 7,
+    "properties": {
+        "source_window_id": "",
+        "Source": "Source",
+        "cursorPosition": "8,27",
+        "scrollLine": "1"
+    },
+    "folds": "",
+    "lastKnownWriteTime": 1790016819,
+    "encoding": "UTF-8",
+    "collab_server": "",
+    "source_window": "",
+    "last_content_update": 1790016819758,
+    "read_only": false,
+    "read_only_alternatives": []
+}
