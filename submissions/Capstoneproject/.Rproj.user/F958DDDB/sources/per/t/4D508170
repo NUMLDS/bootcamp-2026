@@ -1,0 +1,26 @@
+{
+    "id": "4D508170",
+    "path": "~/Desktop/Capstoneproject/3_analyze.R",
+    "project_path": "3_analyze.R",
+    "type": "r_source",
+    "hash": "973463440",
+    "contents": "",
+    "dirty": false,
+    "created": 1790015354508.0,
+    "source_on_save": false,
+    "relative_order": 4,
+    "properties": {
+        "source_window_id": "",
+        "Source": "Source",
+        "cursorPosition": "55,21",
+        "scrollLine": "53"
+    },
+    "folds": "",
+    "lastKnownWriteTime": 1790016578,
+    "encoding": "UTF-8",
+    "collab_server": "",
+    "source_window": "",
+    "last_content_update": 1790016578413,
+    "read_only": false,
+    "read_only_alternatives": []
+}
