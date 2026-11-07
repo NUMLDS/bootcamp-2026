@@ -1,0 +1,45 @@
+---
+title: "NYS Schools and Poverty"
+output: html_document
+---
+
+```{r setup, message=FALSE, warning=FALSE}
+library(tidyverse)
+merged_data <- read_csv("data/processed/nys_merged.csv")
+```
+
+## County Summary
+
+```{r}
+summary_data <- merged_data |>
+  group_by(county_name) |>
+  summarise(
+    total_enrollment = sum(total_enroll, na.rm = TRUE),
+    lunch_percent = mean(
+      per_free_lunch + per_reduced_lunch,
+      na.rm = TRUE
+    ) * 100,
+    poverty_percent = mean(
+      county_per_poverty,
+      na.rm = TRUE
+    ) * 100
+  )
+
+summary_data
+```
+
+## Poverty and Lunch Assistance
+
+```{r}
+summary_data |>
+  ggplot(aes(poverty_percent, lunch_percent)) +
+  geom_point(na.rm = TRUE) +
+  labs(
+    title = "Higher poverty is associated with more lunch assistance",
+    x = "Poverty (%)",
+    y = "Lunch assistance (%)"
+  ) +
+  theme_minimal()
+```
+
+Counties with higher poverty generally have more students receiving free or reduced-price lunch.
