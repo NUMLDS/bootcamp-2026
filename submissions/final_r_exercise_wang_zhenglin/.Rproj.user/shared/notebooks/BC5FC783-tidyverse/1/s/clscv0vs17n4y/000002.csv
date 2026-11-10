@@ -1,0 +1,14 @@
+"1","
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuZGYgfD4gc3VtbWFyaXplKHBvcF9tZWFuID0gbWVhbihwb3ApLCBcbiAgICAgICAgICAgICAgICBwb3BfbWVkID0gbWVkaWFuKHBvcCkpXG5gYGAifQ== -->
+
+```r
+df |> summarize(pop_mean = mean(pop), 
+                pop_med = median(pop))
+```
+
+<!-- rnb-source-end -->
+"
+"0","```r
+df |> summarize(pop_mean = mean(pop), 
+                pop_med = median(pop))
+```"

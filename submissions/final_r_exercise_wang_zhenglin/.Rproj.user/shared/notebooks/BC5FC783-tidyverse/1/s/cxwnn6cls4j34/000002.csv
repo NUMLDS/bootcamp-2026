@@ -1,0 +1,18 @@
+"1","
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuZGYgfD4gXG4gIGZpbHRlcih5ZWFyID09IDIwMDcpIHw+XG4gIGdyb3VwX2J5KGNvbnRpbmVudCkgfD4gXG4gIHN1bW1hcml6ZShtZWFuX2xpZmUgPSBtZWFuKGxpZmVFeHApLCBudW0gPSBuKCkpXG5gYGAifQ== -->
+
+```r
+df |> 
+  filter(year == 2007) |>
+  group_by(continent) |> 
+  summarize(mean_life = mean(lifeExp), num = n())
+```
+
+<!-- rnb-source-end -->
+"
+"0","```r
+df |> 
+  filter(year == 2007) |>
+  group_by(continent) |> 
+  summarize(mean_life = mean(lifeExp), num = n())
+```"

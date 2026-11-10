@@ -1,0 +1,18 @@
+"1","
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuZGF0ZXMgPC0gYyhcIjIwMjYtMDktMTRcIiwgXCIyMDI2LTA5LTE1XCIsXG4gICAgICAgICAgIFwiMjAyNi0wOS0xNlwiLCBcIjIwMjYtMDktMTdcIixcbiAgICAgICAgICAgXCIyMDI2LTA5LTE4XCIsIFwiMjAyNi0wOS0xOVwiKVxuZGF5KHltZChkYXRlcykpXG5gYGAifQ== -->
+
+```r
+dates <- c(\"2026-09-14\", \"2026-09-15\",
+           \"2026-09-16\", \"2026-09-17\",
+           \"2026-09-18\", \"2026-09-19\")
+day(ymd(dates))
+```
+
+<!-- rnb-source-end -->
+"
+"0","```r
+dates <- c(\"2026-09-14\", \"2026-09-15\",
+           \"2026-09-16\", \"2026-09-17\",
+           \"2026-09-18\", \"2026-09-19\")
+day(ymd(dates))
+```"
