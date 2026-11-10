@@ -1,0 +1,5 @@
+source("~/Desktop/Capstone/data/scripts/clean.R")
+source("~/Desktop/Capstone/data/scripts/transform.R")
+source("~/Desktop/Capstone/data/scripts/plot.R")
+source("~/Desktop/Capstone/data/scripts/transformed.R")
+rmarkdown::render("report_simple.Rmd")
