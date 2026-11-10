@@ -8,7 +8,4 @@
 # Quarto
 /.quarto/
 *_cache/
-
-# bootcamp final project data
-**/data/processed/
-**/data/raw/nys_schools.csv
+.Rproj.user

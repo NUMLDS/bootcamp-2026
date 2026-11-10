@@ -1,0 +1,118 @@
+---
+title: "Poverty and Test Performance in New York Public Schools"
+author: "Lilibet Trautman"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE)
+library(tidyverse)
+```
+
+## Question
+
+**What can data tell us about the relationship between poverty and test performance
+in New York public schools?**
+
+I combined two datasets: school-level test scores and lunch data from the NYS
+Department of Education, and county-level poverty data from the US Census (ACS).
+Because the state test changes over time, all scores are standardized to a
+**z-score within each year**, so a value of 0 means "average for that year" and
++1 means "one standard deviation above average."
+
+```{r load-data, echo=FALSE}
+merged <- read_csv("data/processed/schools_acs_merged.csv")
+```
+
+## Question 1: Do low, medium, and high poverty areas differ in test performance?
+
+Counties were split into equal thirds (tertiles) by their poverty rate, so each
+group holds roughly the same number of counties.
+
+```{r q1-table, echo=FALSE}
+merged |>
+  filter(!is.na(poverty_group)) |>
+  group_by(poverty_group) |>
+  summarize(
+    n_schools     = n(),
+    avg_z_math    = mean(z_math, na.rm = TRUE),
+    avg_z_ela     = mean(z_ela,  na.rm = TRUE),
+    avg_free_red  = mean(per_free_lunch + per_reduced_lunch, na.rm = TRUE)
+  )
+```
+
+```{r q1-plot, echo=FALSE, fig.width=7, fig.height=5}
+merged |>
+  filter(!is.na(poverty_group)) |>
+  group_by(poverty_group) |>
+  summarize(avg_z_math = mean(z_math, na.rm = TRUE)) |>
+  ggplot(aes(x = poverty_group, y = avg_z_math)) +
+  geom_col(fill = "steelblue") +
+  labs(
+    x = "County poverty group",
+    y = "Average math score (z-score)",
+    title = "Higher-Poverty Counties Have Lower Average Test Scores"
+  ) +
+  theme_minimal()
+```
+
+**Takeaway:** Test performance falls as county poverty rises. High-poverty
+counties score below the state average; low-poverty counties score above it.
+
+## Question 2: Has this relationship changed over time?
+
+```{r q2-plot, echo=FALSE, fig.width=7, fig.height=5}
+merged |>
+  filter(!is.na(poverty_group)) |>
+  group_by(year, poverty_group) |>
+  summarize(avg_z_math = mean(z_math, na.rm = TRUE), .groups = "drop") |>
+  ggplot(aes(x = year, y = avg_z_math, color = poverty_group)) +
+  geom_line(linewidth = 1) +
+  labs(
+    x = "Year",
+    y = "Average math score (z-score)",
+    color = "Poverty group",
+    title = "The Poverty Gap in Test Scores Persists Across Years"
+  ) +
+  theme_minimal()
+```
+
+**Takeaway:** The gap between low- and high-poverty counties is stable over the
+period, not closing. Poverty tracks with lower scores year after year.
+
+## Question 3: Is the relationship moderated by access to free/reduced lunch?
+
+At the school level, the share of students on free/reduced lunch (a direct
+poverty measure) has a clear negative relationship with test scores.
+
+```{r q3-plot, echo=FALSE, fig.width=7, fig.height=5}
+merged |>
+  mutate(per_free_reduced = per_free_lunch + per_reduced_lunch) |>
+  ggplot(aes(x = per_free_reduced, y = z_math)) +
+  geom_point(alpha = 0.05, color = "steelblue") +
+  geom_smooth(method = "lm", color = "darkred") +
+  labs(
+    x = "Share of students on free/reduced lunch",
+    y = "Math score (z-score within year)",
+    title = "Schools with More Free/Reduced Lunch Score Lower in Math"
+  ) +
+  theme_minimal()
+```
+
+```{r q3-corr, echo=FALSE}
+merged |>
+  mutate(per_free_reduced = per_free_lunch + per_reduced_lunch) |>
+  summarize(correlation = cor(per_free_reduced, z_math, use = "complete.obs"))
+```
+
+**Takeaway:** Free/reduced lunch is itself a strong marker of disadvantage and
+moves with lower scores. Rather than softening the poverty effect, it reinforces
+the same story from the school side that the county poverty data shows from the
+area side.
+
+## Caveats
+
+- ACS county data only covers 2009-2016, so schools in 2008 and 2017 have no
+  poverty match and are dropped from the poverty-group analyses.
+- This is correlation, not causation -- poverty does not directly *cause* lower
+  scores; it is bound up with many other factors (funding, resources, etc.).
