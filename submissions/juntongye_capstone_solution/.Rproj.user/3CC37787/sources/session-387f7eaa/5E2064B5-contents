@@ -1,0 +1,18 @@
+library(tidyverse)
+gapminder <- read.csv("data/raw/gapminder.csv")
+country <- read.csv("data/processed/country_attributes_clean.csv")
+
+gapminder <- gapminder |>
+  filter(year==2007)
+
+count(gapminder)
+count(country)
+
+joined <- left_join(gapminder,country, by = "country")
+
+joined$dist_from_equator <- abs(joined$latitude)
+
+joined$equator_zone <- classify_equator_zone(joined$dist_from_equator)
+
+write_csv(joined, "data/processed/final_gapminder_country_attributes_clean.csv")
+
