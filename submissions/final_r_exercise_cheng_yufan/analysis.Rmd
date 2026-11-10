@@ -1,0 +1,91 @@
+---
+title: "NYS Schools and County Poverty Analysis"
+output: html_document
+---
+
+# Introduction
+
+This analysis examines the relationship between socioeconomic conditions
+and student academic performance in New York State. I use school-level
+data from the New York State Department of Education and county-level
+data from the American Community Survey (ACS).
+
+The analysis focuses on county poverty, students' access to free or
+reduced-price lunch, and standardized math and English Language Arts
+(ELA) performance.
+
+# Data Preparation
+
+The raw datasets were first cleaned before analysis.
+
+Missing values were originally coded as `-99`, so these values were
+converted to `NA`. I also created a categorical poverty variable that
+classifies counties as low, medium, or high poverty.
+
+Because the NYS tests changed over time, raw test scores are not directly
+comparable across years. Therefore, math and ELA scores were standardized
+within each year using z-scores.
+
+The school data and ACS data were then merged using county name and year.
+
+# Summary Tables
+
+The following tables summarize socioeconomic conditions and academic
+performance across New York counties.
+
+```{r summary-tables, message=FALSE, warning=FALSE}
+# Run the analysis script that creates the summary tables
+source("scripts/analyze.R")
+```
+
+## County Summary
+
+This table shows total enrollment, the average percentage of students
+receiving free or reduced-price lunch, and the average county poverty rate.
+
+```{r county-summary}
+county_summary
+```
+
+## Counties with the Highest Poverty Rates
+
+```{r top-poverty}
+top5_table
+```
+
+## Counties with the Lowest Poverty Rates
+
+```{r bottom-poverty}
+bottom5_table
+```
+
+# Data Visualizations
+
+The following figures explore the relationship between socioeconomic
+conditions and student performance.
+
+```{r load-plots, message=FALSE, warning=FALSE}
+# Run the plotting script
+source("scripts/plot.R")
+```
+
+# Findings
+
+Based on the summary tables and visualizations, there appears to be a
+relationship between socioeconomic conditions and academic performance.
+
+Counties with higher poverty rates tend to have a larger proportion of
+students receiving free or reduced-price lunch.
+
+The figures also allow us to compare standardized math and ELA performance
+across low-, medium-, and high-poverty counties.
+
+Because test scores were standardized within each year, the z-scores
+represent a school's performance relative to other schools in the same year.
+
+# Conclusion
+
+Overall, the analysis demonstrates how school-level educational outcomes
+can be combined with county-level socioeconomic information to examine
+patterns in student performance. The use of standardized test scores makes
+comparisons across years more meaningful.
