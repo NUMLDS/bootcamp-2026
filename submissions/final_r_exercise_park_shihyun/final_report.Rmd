@@ -1,0 +1,103 @@
+---
+title: "Poverty and Test Performance in New York Public Schools"
+author: "Shihyun Park"
+date: "`r Sys.Date()`"
+output:
+  html_document:
+    toc: true
+    toc_float: true
+---
+
+```{r setup, include=FALSE}
+# Hide messages/warnings in the HTML; show code
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE)
+library(tidyverse)
+```
+
+## Background
+
+**Question:** What can data tell us about the relationship between poverty and test performance in New York public schools?
+
+1. What's the difference in test performance between low, medium and high poverty areas?
+2. Has this relationship changed over time?
+3. Is this relationship moderated by access to free/reduced price lunch?
+
+The department likely wants to know whether students in poorer areas are falling behind, to decide where to focus support. I combined school test scores with county poverty data and expected high-poverty areas and schools with more students on free/reduced lunch to score lower.
+
+## Workflow
+
+| Script | Job |
+|---|---|
+| `scripts/1_clean.R` | Import raw data, recode -99 to NA, remove duplicates, fix % > 100 |
+| `scripts/2_transform.R` | Create poverty groups, standardize scores by year, merge |
+| `scripts/3_analyze.R` | Summary tables |
+| `scripts/4_plot.R` | Visualizations |
+| `run_all.R` | Runs everything in order |
+
+## Data cleaning
+
+Missing values were coded as -99, so I recoded them to NA. About 6% of school-years had missing test scores, and 19 rows had no county. I removed 24 duplicate rows and set lunch shares above 100% (46 values) to NA as likely entry errors.
+
+## Transformations
+
+**Poverty groups:** I split the 62 counties into three equal-size groups based on each county's average poverty rate from 2009 to 2016. Equal sizes keep comparisons stable, and using the average keeps each county in the same group over time.
+
+```{r groups}
+# Run analysis and plot scripts to create tables and plots
+source("scripts/3_analyze.R")
+source("scripts/4_plot.R")
+
+# Poverty cutoffs: one group per county based on 2009-2016 average
+merged |>
+  distinct(county_name, year, county_per_poverty, poverty_group) |>
+  group_by(county_name, poverty_group) |>
+  summarise(avg_poverty = mean(county_per_poverty), .groups = "drop") |>
+  group_by(poverty_group) |>
+  summarise(n_counties = n(),
+            min_poverty = min(avg_poverty),
+            max_poverty = max(avg_poverty)) |>
+  knitr::kable(digits = 3)
+```
+
+**Z-scores:** The state test changed over time, so I standardized scores within each year. A z-score of 0 is the state average for that year.
+
+**Join:** I used an inner join on county and year because every question needs poverty data. This dropped about 20% of school-years, mainly 2008 and 2017, which have no ACS data.
+
+## Summary tables
+
+```{r tables}
+# Top 5 and bottom 5 poverty counties
+knitr::kable(top_bottom, digits = 2)
+```
+
+## Q1 & Q2: Performance by poverty group
+
+```{r q2}
+# Average z-scores by poverty group
+knitr::kable(group_table, digits = 2)
+plot_group
+```
+
+**Takeaway:** Scores drop steadily as county poverty rises. Low-poverty counties score about 0.4 SD above average and high-poverty counties about 0.3 below, a gap of roughly 0.7 SD, slightly larger in ELA than math.
+
+## Q3: Change over time
+
+```{r q3}
+# Math z-score by poverty group and year
+knitr::kable(trend_table, digits = 2)
+plot_trend
+```
+
+**Takeaway:** The ranking stayed the same every year, but the math gap between low- and high-poverty counties narrowed from 0.73 to 0.50 SD (about 30%) between 2009 and 2016. Since z-scores are relative, high-poverty schools moved closer to others, not necessarily higher in absolute terms.
+
+## Q4: Free/reduced price lunch
+
+```{r q4}
+plot_lunch
+```
+
+**Takeaway:** Schools with more students on free/reduced lunch score lower, and the pattern is nearly identical across all three poverty groups. Most of the county gap reflects how many low-income students each school serves. This is a correlation, not evidence that providing lunch raises scores.
+
+## Limitations & recommendations
+
+County-level poverty hides differences between schools, about 20% of school-years were excluded, and the results show correlation, not causation. I recommend the department use school-level lunch share to identify schools needing support, and study high-lunch-share schools that still perform above average.
