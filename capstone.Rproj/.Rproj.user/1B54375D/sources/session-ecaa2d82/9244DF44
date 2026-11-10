@@ -1,0 +1,26 @@
+{
+    "id": "9244DF44",
+    "path": "~/Desktop/capstone.Rproj/scripts/1_clean.R",
+    "project_path": "scripts/1_clean.R",
+    "type": "r_source",
+    "hash": "0",
+    "contents": "",
+    "dirty": false,
+    "created": 1790014266658.0,
+    "source_on_save": false,
+    "relative_order": 1,
+    "properties": {
+        "source_window_id": "",
+        "Source": "Source",
+        "cursorPosition": "35,40",
+        "scrollLine": "12"
+    },
+    "folds": "",
+    "lastKnownWriteTime": 1790018788,
+    "encoding": "UTF-8",
+    "collab_server": "",
+    "source_window": "",
+    "last_content_update": 1790018788368,
+    "read_only": false,
+    "read_only_alternatives": []
+}
