@@ -1,0 +1,30 @@
+---
+title: "Distance from Equator vs Life Expectancy"
+output: html_document
+---
+
+**Our question**
+
+Is there a relationship between distance from the equator and life expectancy?
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE)
+```
+
+```{r load-data}
+library(tidyverse)
+joined <- read_csv("data/processed/final_gapminder_country_attributes_clean.csv")
+```
+
+**Our analysis**
+
+There seems to be some relationship!
+
+```{r}
+plot(
+  joined$dist_from_equator, joined$lifeExp,
+  xlab = "Distance from equator (degrees latitude)",
+  ylab = "Life expectancy (years)",
+  main = "Life Expectancy Is Higher Farther from the Equator"
+)
+```

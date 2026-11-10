@@ -1,0 +1,5 @@
+source("R/functions.R")
+source("scripts/1_clean.R")
+source("scripts/2_transform.R")
+source("scripts/3_plot.R")
+rmarkdown::render("report_simple.Rmd")

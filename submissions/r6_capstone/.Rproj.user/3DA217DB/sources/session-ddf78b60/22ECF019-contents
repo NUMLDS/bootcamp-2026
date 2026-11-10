@@ -1,0 +1,76 @@
+---
+title: "findings"
+output: html_document
+---
+```{r}
+library(tidyverse)
+merged_data <- read_csv("data/processed/merged.csv")
+```
+
+Here we look at the different averages of test scores by county.
+```{r}
+county_avg <- merged_data |>
+  group_by(county_name, income_group) |>
+  summarise(
+    avg_math = mean(math_z, na.rm = TRUE),
+    avg_ela  = mean(ela_z, na.rm = TRUE),
+    .groups = "drop"
+  )
+county_avg
+```
+Next, we look at what the average score distribution is by income group
+
+```{r}
+income_summary <- county_avg |>
+  group_by(income_group) |>
+  summarise(
+    mean_math = mean(avg_math, na.rm = TRUE),
+    mean_ela  = mean(avg_ela, na.rm = TRUE),
+    .groups = "drop"
+  )
+
+income_summary
+```
+The lower income groups have a lower average score.
+```{r}
+income_avg <- merged_data |>
+  group_by(income_group) |>
+  summarise(
+    median_math = median(math_z, na.rm = TRUE),
+    median_ela  = median(ela_z, na.rm = TRUE),
+    .groups = "drop"
+  ) |>
+  pivot_longer(cols = c(median_math, median_ela), names_to = "subject", values_to = "median_score")
+
+ggplot(income_avg, aes(x = income_group, y = median_score, fill = subject)) +
+  geom_col(position = "dodge") +
+  labs(
+    title = "Income Group Affects Math and ELA Test Scores",
+    x = "Income Group",
+    y = "Median Z-Score",
+    fill = "Subject"
+  ) +
+  scale_fill_discrete(labels = c("ELA", "Math")) +
+  theme_minimal()
+```
+The same table is reinforced by this plot.
+
+```{r}
+lunch_long <- merged_data |>
+  select(income_group, per_free_lunch, per_reduced_lunch) |>
+  pivot_longer(cols = c(per_free_lunch, per_reduced_lunch), 
+               names_to = "lunch_type", values_to = "percent")
+
+ggplot(lunch_long, aes(x = income_group, y = percent, fill = lunch_type)) +
+  geom_boxplot() +
+  labs(
+    title = "Free and Reduced Lunch Percentages by Income Group",
+    x = "Income Group",
+    y = "Percent of Students",
+    fill = "Lunch Type"
+  ) +
+  scale_fill_discrete(labels = c("Free Lunch", "Reduced Lunch")) +
+  theme_minimal()
+
+```
+
