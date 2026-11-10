@@ -1,0 +1,5 @@
+"0","schools_acs <- schools_clean |>"
+"0","  left_join("
+"0","    acs_clean,"
+"0","    by = c(""county_name"", ""year"")"
+"0","  )"

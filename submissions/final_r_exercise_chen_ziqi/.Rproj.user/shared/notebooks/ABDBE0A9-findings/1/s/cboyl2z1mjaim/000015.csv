@@ -1,0 +1,8 @@
+"0","schools_clean <- nys_schools |>"
+"0","  distinct() |> "
+"0","  mutate("
+"0","    county_name = na_if(county_name, ""-99""), "
+"0","    across(where(is.numeric), ~na_if(.x, -99)), "
+"0","    per_free_lunch = if_else(per_free_lunch >1, NA_real_, per_free_lunch), "
+"0","    per_reduced_lunch = if_else(per_reduced_lunch>1, NA_real_, per_reduced_lunch)"
+"0","  )"

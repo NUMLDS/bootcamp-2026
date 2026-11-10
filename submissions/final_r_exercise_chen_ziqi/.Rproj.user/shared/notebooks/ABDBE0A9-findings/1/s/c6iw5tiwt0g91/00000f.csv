@@ -1,0 +1,2 @@
+"0","write_csv(schools_clean, ""Data/Processed/schools_clean.csv"")"
+"0","write_csv(acs_clean, ""Data/Processed/acs_clean.csv"")"

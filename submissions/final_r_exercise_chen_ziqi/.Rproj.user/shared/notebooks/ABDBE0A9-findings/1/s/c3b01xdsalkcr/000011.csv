@@ -1,0 +1,7 @@
+"0","schools_clean <- schools_clean |>"
+"0","  group_by(year) |>"
+"0","  mutate("
+"0","    math_z = as.numeric(scale(mean_math_score)),"
+"0","    ela_z = as.numeric(scale(mean_ela_score))"
+"0","  ) |>"
+"0","  ungroup()"
